@@ -15,6 +15,8 @@ export function NistaiFrontend() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [analysisStep, setAnalysisStep] = useState(0)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [resultHtml, setResultHtml] = useState<string | null>(null)
+  const [pdfUrl, setPdfUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed)
@@ -23,6 +25,9 @@ export function NistaiFrontend() {
     const file = event.target.files?.[0]
     if (file) {
       setSelectedFile(file)
+      setUploadProgress(0)
+      setAnalysisStep(1)
+
       // Simulate file upload progress
       let progress = 0
       const interval = setInterval(() => {
@@ -30,9 +35,32 @@ export function NistaiFrontend() {
         setUploadProgress(progress)
         if (progress >= 100) {
           clearInterval(interval)
-          setAnalysisStep(1)
+          setAnalysisStep(2)
         }
       }, 500)
+
+      // Send fetch request
+      const formData = new FormData()
+      formData.append('pdf_file', file)
+
+      fetch('https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          return response.text()
+        })
+        .then(data => {
+          setResultHtml(data)
+          setAnalysisStep(4) // Analysis complete
+        })
+        .catch(error => {
+          console.error('Error:', error)
+          // Handle error (e.g., show error message to user)
+        })
     }
   }
 
@@ -41,6 +69,9 @@ export function NistaiFrontend() {
     const file = event.dataTransfer.files?.[0]
     if (file) {
       setSelectedFile(file)
+      setUploadProgress(0)
+      setAnalysisStep(1)
+
       // Simulate file upload progress
       let progress = 0
       const interval = setInterval(() => {
@@ -48,9 +79,33 @@ export function NistaiFrontend() {
         setUploadProgress(progress)
         if (progress >= 100) {
           clearInterval(interval)
-          setAnalysisStep(1)
+          setAnalysisStep(2)
         }
       }, 500)
+
+      // Send fetch request
+      const formData = new FormData()
+      formData.append('pdf_file', file)
+
+      fetch('https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process', {
+        method: 'POST',
+        headers: {"Accept":"text/html"},
+        body: formData,
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          return response.text()
+        })
+        .then(data => {
+          setResultHtml(data)
+          setAnalysisStep(4) // Analysis complete
+        })
+        .catch(error => {
+          console.error('Error:', error)
+          // Handle error (e.g., show error message to user)
+        })
     }
   }
 
@@ -60,6 +115,48 @@ export function NistaiFrontend() {
 
   const openFileDialog = () => {
     fileInputRef.current?.click()
+  }
+
+  const handleUrlSubmit = () => {
+    if (pdfUrl) {
+      setUploadProgress(0)
+      setAnalysisStep(1)
+
+      // Simulate upload progress
+      let progress = 0
+      const interval = setInterval(() => {
+        progress += 10
+        setUploadProgress(progress)
+        if (progress >= 100) {
+          clearInterval(interval)
+          setAnalysisStep(2)
+        }
+      }, 500)
+
+      // Send fetch request
+      const formData = new FormData()
+      formData.append('pdf_url', pdfUrl)
+
+      fetch('https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process', {
+        method: 'POST',
+        headers: {"Accept":"text/html"},
+        body: formData,
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          return response.text()
+        })
+        .then(data => {
+          setResultHtml(data)
+          setAnalysisStep(4) // Analysis complete
+        })
+        .catch(error => {
+          console.error('Error:', error)
+          // Handle error
+        })
+    }
   }
 
   return (
@@ -171,8 +268,13 @@ export function NistaiFrontend() {
                 </TabsContent>
                 <TabsContent value="url">
                   <div className="flex">
-                    <Input placeholder="Enter URL" className="flex-1" />
-                    <Button className="ml-2">Submit</Button>
+                    <Input
+                      placeholder="Enter URL"
+                      className="flex-1"
+                      value={pdfUrl}
+                      onChange={(e) => setPdfUrl(e.target.value)}
+                    />
+                    <Button className="ml-2" onClick={handleUrlSubmit}>Submit</Button>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -193,7 +295,7 @@ export function NistaiFrontend() {
             </Card>
           )}
 
-          {analysisStep > 0 && (
+          {analysisStep > 0 && analysisStep < 4 && (
             <Card className="mb-8">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Analyzing Documentation</h3>
@@ -209,15 +311,26 @@ export function NistaiFrontend() {
           )}
 
           {/* Results Container */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
-              <div id="results-container">
-                {/* Returned HTML would be inserted here */}
-                <p className="text-gray-500">No results available yet. Complete the analysis to see your assessment.</p>
-              </div>
-            </CardContent>
-          </Card>
+          {resultHtml && (
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
+                <div id="results-container">
+                  <div dangerouslySetInnerHTML={{ __html: resultHtml }} />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {!resultHtml && (
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
+                <div id="results-container">
+                  <p className="text-gray-500">No results available yet. Complete the analysis to see your assessment.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>
@@ -229,7 +342,7 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, childre
 
   return (
     <div>
-      <button 
+      <button
         className={cn(
           "w-full flex items-center px-4 py-2 hover:bg-gray-100 transition-colors",
           isActive && "bg-blue-50 text-blue-600"
@@ -251,7 +364,7 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, childre
 
 function SubMenuItem({ label, isActive = false }) {
   return (
-    <button 
+    <button
       className={cn(
         "w-full flex items-center px-4 py-2 hover:bg-gray-100 transition-colors",
         isActive && "bg-blue-50 text-blue-600"

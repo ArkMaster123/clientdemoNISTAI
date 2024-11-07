@@ -1,0 +1,97 @@
+
+# 2024-11-07 20:31:17.188255
++y
+
+# 2024-11-07 20:32:14.645637
++n
+
+# 2024-11-07 20:32:26.532099
++/map
+
+# 2024-11-07 20:32:59.341044
++/add /workspaces/nextjs-template/components/nistai-frontend.tsx
+
+# 2024-11-07 20:34:46.826769
++DO NOT CHANGE anything in this file, i want you to put in .env the relevant API for my flask server which will process both .pdf file and also .pdf URLs. here is my documentation to help you: Overview
++A Flask-based API that processes PDFs using Claude 3.5 Sonnet API to perform security analysis. The API supports both direct file uploads and URL-based PDF processing.
++
++Features
++PDF file upload support (up to 32MB)
++PDF URL processing
++Rate limiting (5 requests per minute)
++Security analysis with NIST framework scoring
++HTML-formatted responses
++Input validation
++API Endpoints
++1. File Upload Endpoint
++URL: /process
++Method: POST
++Content-Type: multipart/form-data
++Form Parameter: pdf_file
++Rate Limit: 5 requests per minute
++Max File Size: 32MB
++Max Pages: 100
++2. URL Processing Endpoint
++URL: /process
++Method: POST
++Content-Type: application/x-www-form-urlencoded
++Form Parameter: pdf_url
++Rate Limit: 5 requests per minute
++Authentication
++Requires Anthropic API key set as environment variable: ANTHROPIC_API_KEY
++
++Response Format
++Returns HTML-formatted security analysis including:
++
++Company/Organization identification
++Security risks and challenges
++Security gaps analysis
++NIST framework scores
++Example Usage
++Using cURL for File Upload
++curl -X POST \
++  -F "pdf_file=@/path/to/document.pdf" \
++  http://your-server/process
++Using cURL for URL Processing
++curl -X POST \
++  -d "pdf_url=https://example.com/document.pdf" \
++  http://your-server/process
++Error Responses
++400: Invalid input (missing file/URL, invalid format)
++413: File too large
++429: Rate limit exceeded
++Limitations
++PDF files must not be password protected
++Maximum file size: 32MB
++Maximum pages: 100
++Supported content type: application/pdf only server URL (pelase add to env too) https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/
+
+# 2024-11-07 20:34:48.549315
++n
+
+# 2024-11-07 20:35:00.959398
++y
+
+# 2024-11-07 20:35:03.002885
++/run echo ".env" >> .gitignore
+
+# 2024-11-07 20:35:13.389466
++/run echo ".env" >> .gitignore
+
+# 2024-11-07 20:35:30.951737
++have you ensured that this is now added to my nistai frontend?
+
+# 2024-11-07 20:36:11.402854
++n
+
+# 2024-11-07 20:36:18.919191
++/undo
+
+# 2024-11-07 20:36:21.526999
++n
+
+# 2024-11-07 20:36:25.687496
++/undo
+
+# 2024-11-07 20:38:15.545094
++/ask can you summarise what is happening here?
