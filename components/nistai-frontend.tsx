@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Upload, User } from 'lucide-react'
+import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Shield, Upload, User } from 'lucide-react'
 
 export function NistaiFrontend() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -18,6 +18,8 @@ export function NistaiFrontend() {
   const [resultHtml, setResultHtml] = useState<string | null>(null)
   const [pdfUrl, setPdfUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed)
 
@@ -176,31 +178,49 @@ export function NistaiFrontend() {
             <Menu className="h-4 w-4" />
           </Button>
         </div>
+        
 
-        {/* Sidebar Menu */}
-        <nav className="flex-grow py-4">
-          <MenuItem icon={<Home size={20} />} label="Introduction" />
-          <MenuItem icon={<ChevronDown size={20} />} label="Products" isExpandable>
-            <SubMenuItem label="DocuSight" />
-            <SubMenuItem label="CYBERAI" />
-            <SubMenuItem label="NISTAI" isActive />
+         {/* Sidebar Menu */}
+         <nav className="flex-grow py-4">
+          <MenuItem 
+            icon={<Home size={20} />} 
+            label="Dashboard" 
+            isActive 
+            isCollapsed={isSidebarCollapsed}
+          />
+          <MenuItem 
+            icon={<Shield size={20} />} 
+            label="Products" 
+            isExpandable 
+            isCollapsed={isSidebarCollapsed}
+          >
+            <SubMenuItem 
+              icon={<Brain size={20} />}
+              label="NISTAI" 
+              isActive 
+              isCollapsed={isSidebarCollapsed}
+            />
           </MenuItem>
-          <MenuItem icon={<ClipboardList size={20} />} label="History" />
-          <MenuItem icon={<User size={20} />} label="Support" />
-          <MenuItem icon={<User size={20} />} label="FAQ" />
-          <MenuItem icon={<User size={20} />} label="Profile" />
+          <MenuItem 
+            icon={<User size={20} />} 
+            label="Support" 
+            isCollapsed={isSidebarCollapsed}
+          />
         </nav>
 
-        {/* User Profile */}
-        <div className="h-16 border-t border-[#E5E7EB] flex items-center px-4">
-          <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
-          {!isSidebarCollapsed && (
-            <>
-              <span className="ml-3 font-medium">Username</span>
-              <LogOut size={20} className="ml-auto" />
-            </>
-          )}
-        </div>
+        {/* User Profile and Collapse Button */}
+<div className="h-16 border-t border-[#E5E7EB] flex items-center px-4">
+  <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+    <Menu className="h-4 w-4" />
+  </Button>
+  {!isSidebarCollapsed && (
+    <>
+      <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
+      <span className="ml-3 font-medium">Username</span>
+      <LogOut size={20} className="ml-auto" />
+    </>
+  )}
+</div>
       </aside>
 
       {/* Main Content */}
@@ -211,7 +231,7 @@ export function NistaiFrontend() {
             <Button variant="ghost" size="icon" className="mr-4 hidden lg:flex" onClick={toggleSidebar}>
               <Menu className="h-6 w-6" />
             </Button>
-            <h1 className="text-2xl font-bold">NISTAI Dashboard</h1>
+            
           </div>
 
           {/* Welcome Card */}
@@ -337,23 +357,33 @@ export function NistaiFrontend() {
   )
 }
 
-function MenuItem({ icon, label, isExpandable = false, isActive = false, children }) {
+function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
     <div>
-      <button
+      <button 
         className={cn(
           "w-full flex items-center px-4 py-2 hover:bg-gray-100 transition-colors",
           isActive && "bg-blue-50 text-blue-600"
         )}
         onClick={() => isExpandable && setIsExpanded(!isExpanded)}
+        title={isCollapsed ? label : undefined}
       >
         <span className="mr-3">{icon}</span>
-        <span className="flex-grow text-left">{label}</span>
-        {isExpandable && <ChevronDown size={16} className={cn("transition-transform", isExpanded && "transform rotate-180")} />}
+        {!isCollapsed && (
+          <>
+            <span className="flex-grow text-left">{label}</span>
+            {isExpandable && (
+              <ChevronDown 
+                size={16} 
+                className={cn("transition-transform", isExpanded && "transform rotate-180")} 
+              />
+            )}
+          </>
+        )}
       </button>
-      {isExpandable && isExpanded && (
+      {isExpandable && isExpanded && !isCollapsed && (
         <div className="ml-6 mt-1">
           {children}
         </div>
@@ -362,15 +392,17 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, childre
   )
 }
 
-function SubMenuItem({ label, isActive = false }) {
+function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
   return (
-    <button
+    <button 
       className={cn(
         "w-full flex items-center px-4 py-2 hover:bg-gray-100 transition-colors",
         isActive && "bg-blue-50 text-blue-600"
       )}
+      title={isCollapsed ? label : undefined}
     >
-      <span>{label}</span>
+      {icon && <span className="mr-3">{icon}</span>}
+      {!isCollapsed && <span>{label}</span>}
     </button>
   )
 }

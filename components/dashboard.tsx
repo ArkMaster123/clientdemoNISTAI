@@ -38,11 +38,30 @@ export function DashboardComponent() {
 
         {/* Sidebar Menu */}
         <nav className="flex-grow py-4">
-          <MenuItem icon={<Home size={20} />} label="Dashboard" isActive />
-          <MenuItem icon={<ChevronDown size={20} />} label="Products" isExpandable>
-            <SubMenuItem label="NISTAI" isActive />
+          <MenuItem 
+            icon={<Home size={20} />} 
+            label="Dashboard" 
+            isActive 
+            isCollapsed={isSidebarCollapsed}
+          />
+          <MenuItem 
+            icon={<Shield size={20} />} 
+            label="Products" 
+            isExpandable 
+            isCollapsed={isSidebarCollapsed}
+          >
+            <SubMenuItem 
+              icon={<Brain size={20} />}
+              label="NISTAI" 
+              isActive 
+              isCollapsed={isSidebarCollapsed}
+            />
           </MenuItem>
-          <MenuItem icon={<User size={20} />} label="Support" />
+          <MenuItem 
+            icon={<User size={20} />} 
+            label="Support" 
+            isCollapsed={isSidebarCollapsed}
+          />
         </nav>
 
         {/* User Profile and Collapse Button */}
@@ -149,7 +168,7 @@ export function DashboardComponent() {
   )
 }
 
-function MenuItem({ icon, label, isExpandable = false, isActive = false, children }) {
+function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
@@ -160,12 +179,22 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, childre
           isActive && "bg-blue-50 text-blue-600"
         )}
         onClick={() => isExpandable && setIsExpanded(!isExpanded)}
+        title={isCollapsed ? label : undefined}
       >
         <span className="mr-3">{icon}</span>
-        <span className="flex-grow text-left">{label}</span>
-        {isExpandable && <ChevronDown size={16} className={cn("transition-transform", isExpanded && "transform rotate-180")} />}
+        {!isCollapsed && (
+          <>
+            <span className="flex-grow text-left">{label}</span>
+            {isExpandable && (
+              <ChevronDown 
+                size={16} 
+                className={cn("transition-transform", isExpanded && "transform rotate-180")} 
+              />
+            )}
+          </>
+        )}
       </button>
-      {isExpandable && isExpanded && (
+      {isExpandable && isExpanded && !isCollapsed && (
         <div className="ml-6 mt-1">
           {children}
         </div>
@@ -174,15 +203,17 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, childre
   )
 }
 
-function SubMenuItem({ label, isActive = false }) {
+function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
   return (
     <button 
       className={cn(
         "w-full flex items-center px-4 py-2 hover:bg-gray-100 transition-colors",
         isActive && "bg-blue-50 text-blue-600"
       )}
+      title={isCollapsed ? label : undefined}
     >
-      <span>{label}</span>
+      {icon && <span className="mr-3">{icon}</span>}
+      {!isCollapsed && <span>{label}</span>}
     </button>
   )
 }
