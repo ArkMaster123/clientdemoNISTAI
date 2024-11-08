@@ -249,5 +249,7 @@ export function LoginPageComponent() {
         </motion.div>
       </div>
     </div>
+    
+    
   )
 }

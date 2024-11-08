@@ -48,10 +48,13 @@ export function DashboardComponent() {
       )}>
         {/* Sidebar Header */}
         <div className="h-16 flex items-center px-4 border-b border-[#E5E7EB]">
-          <div className="w-8 h-8 bg-blue-600 rounded flex-shrink-0"></div>
-          {!isSidebarCollapsed && (
-            <span className="ml-3 text-xl font-semibold">NISTAI</span>
-          )}
+          <div className={isSidebarCollapsed ? "w-8" : "w-32"}>
+            <img
+              src="https://cdn.prod.website-files.com/6459501a1911cd7b5655f077/646a2f2db39363e2e38e31f4_logo-white-goldi.svg"
+              alt="Goldilock"
+              className={`h-8 w-full object-contain invert`}
+            />
+          </div>
         </div>
 
        {/* Sidebar Menu */}
@@ -100,7 +103,7 @@ export function DashboardComponent() {
       <main className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto p-8">
           {/* Welcome Card with Animation */}
-          <Card className="bg-blue-600 text-white mb-6 overflow-hidden">
+          <Card className="bg-indigo-800 text-white mb-6 overflow-hidden">
             <CardContent className="p-8 relative">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -109,14 +112,15 @@ export function DashboardComponent() {
               >
                 <h2 className="text-3xl font-bold mb-2">Welcome, John Doe</h2>
                 <p className="text-xl">Your AI-Powered NIST Compliance Engine</p>
+                
               </motion.div>
             </CardContent>
           </Card>
 
           {/* Info Box */}
-          <Card className="mb-8 bg-blue-50">
+          <Card className="mb-8 bg-indigo-100">
             <CardContent className="p-6">
-              <p className="text-blue-800">NISTAI equips you with deep intelligence to achieve and maintain NIST compliance. Lets explore your current status and areas for improvement.</p>
+              <p className="text-blue-800">Stop struggling with compliance documentation. NISTAI equips you with deep intelligence.</p>
             </CardContent>
           </Card>
 
@@ -243,7 +247,7 @@ function CapabilityCard({ icon, title, description }) {
     <Card>
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-4 text-blue-500 bg-blue-100 p-4 rounded-full">{icon}</div>
+          <div className="mb-4 text-indigo-600 bg-blue-100 p-4 rounded-full">{icon}</div>
           <h3 className="text-lg font-semibold mb-2">{title}</h3>
           <p className="text-gray-600 text-sm">{description}</p>
         </div>
