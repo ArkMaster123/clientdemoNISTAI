@@ -84,7 +84,7 @@ export function BlockPage() {
     }
   }
 
-  const SidebarContent = () => (
+  const CustomSidebarContent = () => (
     <>
       <SidebarHeader className="h-[72px] flex items-center px-4">
         <div className="flex items-center space-x-2">
@@ -157,7 +157,7 @@ export function BlockPage() {
             isSidebarExpanded ? 'w-[280px]' : 'w-16'
           } transition-all duration-200 ease-in-out`}
         >
-          <SidebarContent />
+          <CustomSidebarContent />
           <SidebarTrigger
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
             className="absolute top-3 right-3"

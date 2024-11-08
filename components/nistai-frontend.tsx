@@ -392,6 +392,7 @@ export function NistaiFrontend() {
             label="Dashboard" 
             isActive 
             isCollapsed={isSidebarCollapsed}
+            children={null}
           />
           <MenuItem 
             icon={<Shield size={20} />} 
@@ -410,6 +411,7 @@ export function NistaiFrontend() {
             icon={<User size={20} />} 
             label="Support" 
             isCollapsed={isSidebarCollapsed}
+            children={null}
           />
         </nav>
 

@@ -44,6 +44,7 @@ export function DashboardComponent() {
             label="Dashboard" 
             isActive 
             isCollapsed={isSidebarCollapsed}
+            children={null}
           />
           <MenuItem 
             icon={<Shield size={20} />} 
@@ -100,7 +101,7 @@ export function DashboardComponent() {
           {/* Info Box */}
           <Card className="mb-8 bg-blue-50">
             <CardContent className="p-6">
-              <p className="text-blue-800">NISTAI equips you with deep intelligence to achieve and maintain NIST compliance. Let's explore your current status and areas for improvement.</p>
+              <p className="text-blue-800">NISTAI equips you with deep intelligence to achieve and maintain NIST compliance. Lets explore your current status and areas for improvement.</p>
             </CardContent>
           </Card>
 
