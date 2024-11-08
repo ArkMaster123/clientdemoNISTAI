@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Shield, Upload, User } from 'lucide-react'
+import { CardHeader, CardTitle } from "@/components/ui/card"
+import { AlertTriangle, Activity } from 'lucide-react'
 
 export function NistaiFrontend() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -160,6 +162,209 @@ export function NistaiFrontend() {
         })
     }
   }
+
+  function AnalysisResults({ htmlContent }) {
+    const extractContent = (html, tag, className = '') => {
+      const regex = className 
+        ? new RegExp(`<${tag}[^>]*class="${className}"[^>]*>(.*?)<\/${tag}>`, 'gs')
+        : new RegExp(`<${tag}[^>]*>(.*?)<\/${tag}>`, 'gs');
+      const matches = html.match(regex);
+      return matches ? matches.map(match => {
+        // Remove any HTML tags and trim
+        return match.replace(/<[^>]*>/g, '').trim();
+      }) : [];
+    };
+  
+    // Extract sections
+    const originalTitle = extractContent(htmlContent, 'h1')[0];
+    // Clean up title - remove any processing text if present
+    const title = originalTitle.includes('Security Analysis') 
+      ? originalTitle.substring(originalTitle.indexOf('Security Analysis') - 30)
+      : originalTitle;
+  
+    const summary = extractContent(htmlContent, 'p')[0]; // Get first paragraph for summary
+    
+    // Extract all list items and paragraphs
+    const allListItems = extractContent(htmlContent, 'li');
+    const allParagraphs = extractContent(htmlContent, 'p');
+    
+    // Find the Recover index as our anchor point
+    const recoverIndex = allListItems.findIndex(item => item.startsWith('Recover:'));
+  
+    // Extract risks and gaps (everything before NIST scores)
+    const firstNistScoreIndex = allListItems.findIndex(item => item.includes('/5'));
+    const securityRisks = allListItems.slice(0, 6);
+    const securityGaps = allListItems.slice(6, firstNistScoreIndex);
+  
+    // Extract NIST scores
+    const nistScores = allListItems
+      .filter(item => item.includes('/5'))
+      .map(score => {
+        const [scoreText, description] = score.split('-').map(s => s.trim());
+        const scoreMatch = scoreText.match(/(\d+)\/5/);
+        const scoreNum = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+        const category = scoreText.split(':')[0].trim();
+        
+        return {
+          category,
+          score: scoreNum,
+          description: description || scoreText.split(':')[1]?.trim() || ''
+        };
+      });
+  
+    // Get recommendations and overall risk rating
+    const riskRating = allParagraphs.find(p => p.includes('Overall Risk Rating'))?.trim();
+    
+    // Get nested recommendations if they exist
+    const nestedRecsIndex = allListItems.findIndex(item => 
+      item.includes('Recommended implementation of:')
+    );
+    
+    let recommendations = [];
+    if (nestedRecsIndex !== -1) {
+      recommendations = allListItems
+        .slice(nestedRecsIndex + 1)
+        .filter(item => 
+          item.includes('Enhanced') ||
+          item.includes('Multi-factor') ||
+          item.includes('Regular security') ||
+          item.includes('Comprehensive') ||
+          item.includes('Third-party')
+        );
+    } else {
+      // Otherwise look for class="recommendations" content
+      const recsContent = extractContent(htmlContent, 'p', 'recommendations')[0];
+      if (recsContent) {
+        recommendations = recsContent
+          .replace('Priority recommendations:', '')
+          .split('-')
+          .filter(item => item.trim())
+          .map(item => item.trim());
+      }
+    }
+  
+    return (
+      <div className="space-y-6">
+        {/* Header Section */}
+        <Card className="bg-blue-600 text-white">
+          <CardContent className="p-6">
+            <h1 className="text-2xl font-bold mb-4">{title}</h1>
+            <p className="text-lg opacity-90">{summary}</p>
+          </CardContent>
+        </Card>
+  
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Security Risks */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-red-600">
+                <AlertTriangle className="mr-2" /> Security Risks and Challenges
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {securityRisks.map((risk, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>{risk}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+  
+          {/* Security Gaps */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-orange-600">
+                <Shield className="mr-2" /> Security Gaps
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {securityGaps.map((gap, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="mr-2">•</span>
+                    <span>{gap}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+  
+        {/* NIST Scores */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-blue-600">
+              <Activity className="mr-2" /> NIST Framework Scores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {nistScores.map(({ category, score, description }, index) => (
+                <Card key={index} className="bg-gray-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2">{category}</h3>
+                    <div className="flex space-x-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <div
+                          key={n}
+                          className={`h-2 w-full rounded ${
+                            n <= score ? 'bg-blue-600' : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">{score}/5</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">{description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+  
+        {/* Recommendations */}
+        {recommendations.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-green-600">
+                <ArrowRight className="mr-2" /> Priority Recommendations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {recommendations.map((recommendation, index) => (
+                  <Card key={index} className="bg-green-50">
+                    <CardContent className="p-4">
+                      <p className="flex items-start">
+                        <span className="mr-2 font-bold">{index + 1}.</span>
+                        <span>{recommendation}</span>
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+  
+        {/* Overall Risk Rating */}
+        {riskRating && (
+          <Card className="bg-red-50">
+            <CardContent className="p-6">
+              <p className="text-lg font-semibold text-red-600">{riskRating}</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -331,26 +536,22 @@ export function NistaiFrontend() {
           )}
 
           {/* Results Container */}
-          {resultHtml && (
-            <Card className="mb-8">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
-                <div id="results-container">
-                  <div dangerouslySetInnerHTML={{ __html: resultHtml }} />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          {!resultHtml && (
-            <Card className="mb-8">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
-                <div id="results-container">
-                  <p className="text-gray-500">No results available yet. Complete the analysis to see your assessment.</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+{resultHtml ? (
+  <Card className="mb-8">
+    <CardContent className="p-6">
+      <AnalysisResults htmlContent={resultHtml} />
+    </CardContent>
+  </Card>
+) : (
+  <Card className="mb-8">
+    <CardContent className="p-6">
+      <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
+      <div id="results-container">
+        <p className="text-gray-500">No results available yet. Complete the analysis to see your assessment.</p>
+      </div>
+    </CardContent>
+  </Card>
+)}
         </div>
       </main>
     </div>
