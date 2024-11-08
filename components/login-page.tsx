@@ -4,8 +4,10 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export function LoginPageComponent() {
+  const router = useRouter();  // Add this first
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -108,26 +110,26 @@ export function LoginPageComponent() {
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-    // TODO: Implement actual login/signup logic here
-    // This is a placeholder to simulate the process
     setTimeout(() => {
       if (isLogin) {
-        console.log('Logging in with:', email, password)
+        console.log('Logging in with:', email, password);
+        router.push('/dashboard');
       } else {
         if (password !== confirmPassword) {
-          setError('Passwords do not match')
-          setIsLoading(false)
-          return
+          setError('Passwords do not match');
+          setIsLoading(false);
+          return;
         }
-        console.log('Signing up with:', email, password)
+        console.log('Signing up with:', email, password);
+        router.push('/dashboard');
       }
-      setIsLoading(false)
-    }, 2000)
-  }
+      setIsLoading(false);
+    }, 1000);
+  };
 
   return (
     <div className="flex min-h-screen bg-black text-white">
