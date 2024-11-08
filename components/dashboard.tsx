@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import { Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Shield, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export function DashboardComponent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -204,6 +205,8 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, isColla
 }
 
 function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
+  const router = useRouter()
+
   return (
     <button 
       className={cn(
@@ -211,6 +214,7 @@ function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
         isActive && "bg-blue-50 text-blue-600"
       )}
       title={isCollapsed ? label : undefined}
+      onClick={() => label === "NISTAI" ? router.push('/nistai') : null}
     >
       {icon && <span className="mr-3">{icon}</span>}
       {!isCollapsed && <span>{label}</span>}
