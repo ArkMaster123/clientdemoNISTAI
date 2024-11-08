@@ -10,6 +10,23 @@ import { cn } from "@/lib/utils"
 import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Shield, Upload, User } from 'lucide-react'
 import { CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, Activity } from 'lucide-react'
+interface MenuItemProps {
+  icon: React.ReactNode;
+  label: string;
+  isExpandable?: boolean;
+  isActive?: boolean;
+  isCollapsed?: boolean;
+  children?: React.ReactNode;
+}
+
+interface SubMenuItemProps {
+  icon: React.ReactNode;
+  label: string;
+  isActive?: boolean;
+  isCollapsed?: boolean;
+}
+
+
 
 export function NistaiFrontend() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -392,7 +409,6 @@ export function NistaiFrontend() {
             label="Dashboard" 
             isActive 
             isCollapsed={isSidebarCollapsed}
-            children={null}
           />
           <MenuItem 
             icon={<Shield size={20} />} 
@@ -411,7 +427,6 @@ export function NistaiFrontend() {
             icon={<User size={20} />} 
             label="Support" 
             isCollapsed={isSidebarCollapsed}
-            children={null}
           />
         </nav>
 
@@ -560,7 +575,7 @@ export function NistaiFrontend() {
   )
 }
 
-function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }) {
+function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }: MenuItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (

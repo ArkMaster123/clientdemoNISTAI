@@ -9,6 +9,23 @@ import { cn } from "@/lib/utils"
 import { Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Shield, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
+interface MenuItemProps {
+  icon: React.ReactNode;
+  label: string;
+  isExpandable?: boolean;
+  isActive?: boolean;
+  isCollapsed?: boolean;
+  children?: React.ReactNode;
+}
+
+interface SubMenuItemProps {
+  icon: React.ReactNode;
+  label: string;
+  isActive?: boolean;
+  isCollapsed?: boolean;
+}
+
+
 export function DashboardComponent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
@@ -37,35 +54,33 @@ export function DashboardComponent() {
           )}
         </div>
 
-        {/* Sidebar Menu */}
-        <nav className="flex-grow py-4">
-          <MenuItem 
-            icon={<Home size={20} />} 
-            label="Dashboard" 
-            isActive 
-            isCollapsed={isSidebarCollapsed}
-            children={null}
-          />
-          <MenuItem 
-            icon={<Shield size={20} />} 
-            label="Products" 
-            isExpandable 
-            isCollapsed={isSidebarCollapsed}
-          >
-            <SubMenuItem 
-              icon={<Brain size={20} />}
-              label="NISTAI" 
-              isActive 
-              isCollapsed={isSidebarCollapsed}
-            />
-          </MenuItem>
-          <MenuItem 
-            icon={<User size={20} />} 
-            label="Support" 
-            isCollapsed={isSidebarCollapsed}
-          />
-        </nav>
-
+       {/* Sidebar Menu */}
+<nav className="flex-grow py-4">
+  <MenuItem 
+    icon={<Home size={20} />} 
+    label="Dashboard" 
+    isActive 
+    isCollapsed={isSidebarCollapsed}
+  />
+  <MenuItem 
+    icon={<Shield size={20} />} 
+    label="Products" 
+    isExpandable 
+    isCollapsed={isSidebarCollapsed}
+  >
+    <SubMenuItem 
+      icon={<Brain size={20} />}
+      label="NISTAI" 
+      isActive 
+      isCollapsed={isSidebarCollapsed}
+    />
+  </MenuItem>
+  <MenuItem 
+    icon={<User size={20} />} 
+    label="Support" 
+    isCollapsed={isSidebarCollapsed}
+  />
+</nav>
         {/* User Profile and Collapse Button */}
         <div className="h-16 border-t border-[#E5E7EB] flex items-center px-4">
           <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
@@ -170,7 +185,7 @@ export function DashboardComponent() {
   )
 }
 
-function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }) {
+function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }: MenuItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
@@ -205,7 +220,7 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, isColla
   )
 }
 
-function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
+function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }: SubMenuItemProps) {
   const router = useRouter()
 
   return (
