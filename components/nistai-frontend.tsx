@@ -11,6 +11,7 @@ import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rock
 import { CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, Activity } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 interface MenuItemProps {
   icon: React.ReactNode;
   label: string;
@@ -615,6 +616,22 @@ export function NistaiFrontend() {
 
 function MenuItem({ icon, label, isExpandable = false, isActive = false, isCollapsed = false, children }: MenuItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const router = useRouter()
+
+  const handleClick = () => {
+    if (isExpandable) {
+      setIsExpanded(!isExpanded)
+    } else {
+      switch (label) {
+        case 'Dashboard':
+          router.push('/dashboard')
+          break
+        case 'Support':
+          router.push('/')
+          break
+      }
+    }
+  }
 
   return (
     <div>
@@ -623,7 +640,7 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, isColla
           "w-full flex items-center px-4 py-2 hover:bg-gray-100 transition-colors",
           isActive && "bg-blue-50 text-blue-600"
         )}
-        onClick={() => isExpandable && setIsExpanded(!isExpanded)}
+        onClick={handleClick}
         title={isCollapsed ? label : undefined}
       >
         <span className="mr-3">{icon}</span>
@@ -648,7 +665,17 @@ function MenuItem({ icon, label, isExpandable = false, isActive = false, isColla
   )
 }
 
-function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
+function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }: SubMenuItemProps) {
+  const router = useRouter()
+
+  const handleClick = () => {
+    switch (label) {
+      case 'NISTAI':
+        router.push('/nistai')
+        break
+    }
+  }
+
   return (
     <button 
       className={cn(
@@ -656,6 +683,7 @@ function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
         isActive && "bg-blue-50 text-blue-600"
       )}
       title={isCollapsed ? label : undefined}
+      onClick={handleClick}
     >
       {icon && <span className="mr-3">{icon}</span>}
       {!isCollapsed && <span>{label}</span>}
