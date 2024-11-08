@@ -479,17 +479,27 @@ export function NistaiFrontend() {
             <ProcessStep icon={<ClipboardList size={24} />} title="Assessment Review" description="Review detailed compliance assessment" />
           </div>
 
-          {/* Upload Interface */}
-          <Card className="mb-8">
+         {/* Upload Interface */}
+         <Card className="mb-8">
             <CardContent className="p-6">
               <Tabs defaultValue="file" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="file" className="text-center py-2">File Upload</TabsTrigger>
-                  <TabsTrigger value="url" className="text-center py-2">URL Input</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 bg-muted p-1 rounded-lg h-11">
+                  <TabsTrigger 
+                    value="file" 
+                    className="rounded-md py-2 px-3 data-[state=active]:bg-white data-[state=active]:text-foreground"
+                  >
+                    File Upload
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="url" 
+                    className="rounded-md py-2 px-3 data-[state=active]:bg-white data-[state=active]:text-foreground"
+                  >
+                    URL Input
+                  </TabsTrigger>
                 </TabsList>
-                <TabsContent value="file">
+                <TabsContent value="file" className="pt-2">
                   <div
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center flex flex-col items-center justify-center hover:border-blue-500 transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center flex flex-col items-center justify-center hover:border-blue-500 transition-colors cursor-pointer bg-white"
                     onClick={openFileDialog}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
