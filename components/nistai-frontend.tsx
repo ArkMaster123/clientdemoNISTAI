@@ -448,25 +448,24 @@ export function NistaiFrontend() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto p-8">
-          {/* Header with Navigation Toggle */}
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" size="icon" className="mr-4 hidden lg:flex" onClick={toggleSidebar}>
-              <Menu className="h-6 w-6" />
-            </Button>
-            
-          </div>
+          
 
           {/* Welcome Card */}
-          <Card className="bg-blue-600 text-white mb-6">
+          <Card className="bg-[#080415] text-white mb-6 overflow-hidden">
             <CardContent className="p-8 relative">
-              <h2 className="text-3xl font-bold mb-2">Hi Username,</h2>
-              <p className="text-xl">I am your AI-Powered NIST Compliance Engine</p>
-              <Rocket className="absolute top-4 right-4 opacity-40" size={80} />
+              <div className="relative z-10">
+                <h2 className="text-4xl font-bold mb-2">Compliance is Complex</h2>
+                <p className="text-xl opacity-80">Lets simplify the terms...</p>
+              </div>
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
+                <div className="absolute inset-0 bg-[url('/pattern.svg')] bg-repeat opacity-20" />
+              </div>
             </CardContent>
           </Card>
 
           {/* Info Box */}
-          <Card className="mb-8 bg-blue-50">
+          <Card className="mb-8 bg-indigo-100">
             <CardContent className="p-6">
               <p className="text-blue-800">Stop struggling with compliance documentation. NISTAI equips you with deep intelligence to achieve and maintain NIST compliance.</p>
             </CardContent>
@@ -638,7 +637,7 @@ function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }) {
 function ProcessStep({ icon, title, description }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <div className="mb-4 text-blue-500 bg-blue-100 p-4 rounded-full">{icon}</div>
+      <div className="mb-4 text-white bg-indigo-600 p-4 rounded-full">{icon}</div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
       <p className="text-gray-600 text-sm">{description}</p>
     </div>
