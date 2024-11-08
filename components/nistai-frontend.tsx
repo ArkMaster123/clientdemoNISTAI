@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Shield, Upload, User } from 'lucide-react'
 import { CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, Activity } from 'lucide-react'
+import Image from 'next/image'
 interface MenuItemProps {
   icon: React.ReactNode;
   label: string;
@@ -392,15 +393,14 @@ export function NistaiFrontend() {
       )}>
         {/* Sidebar Header */}
         <div className="h-16 flex items-center px-4 border-b border-[#E5E7EB]">
-          <div className="w-8 h-8 bg-blue-600 rounded flex-shrink-0"></div>
-          {!isSidebarCollapsed && (
-            <span className="ml-3 text-xl font-semibold">whatAIdea</span>
-          )}
-          <Button variant="ghost" size="icon" className="ml-auto lg:hidden" onClick={toggleSidebar}>
-            <Menu className="h-4 w-4" />
-          </Button>
+          <div className={isSidebarCollapsed ? "w-8" : "w-32"}>
+            <img
+              src="https://cdn.prod.website-files.com/6459501a1911cd7b5655f077/646a2f2db39363e2e38e31f4_logo-white-goldi.svg"
+              alt="Goldilock"
+              className={`h-8 w-full object-contain invert`}
+            />
+          </div>
         </div>
-        
 
          {/* Sidebar Menu */}
          <nav className="flex-grow py-4">
