@@ -1,13 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
-import { Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Shield, User } from 'lucide-react'
+import { Brain, ArrowRight, ChevronDown, ClipboardList, Home, LogOut, Menu, Shield, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+
+
 
 interface MenuItemProps {
   icon: React.ReactNode;
@@ -28,6 +30,18 @@ interface SubMenuItemProps {
 
 export function DashboardComponent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+
+  // Add this useEffect right here
+  useEffect(() => {
+    const checkScreenSize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarCollapsed(true)
+      }
+    }
+    checkScreenSize()
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed)
 
@@ -86,15 +100,26 @@ export function DashboardComponent() {
 </nav>
         {/* User Profile and Collapse Button */}
         <div className="h-16 border-t border-[#E5E7EB] flex items-center px-4">
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
-            <Menu className="h-4 w-4" />
-          </Button>
           {!isSidebarCollapsed && (
             <>
               <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
               <span className="ml-3 font-medium">John Doe</span>
-              <LogOut size={20} className="ml-auto" />
+              <Button variant="ghost" size="icon" onClick={toggleSidebar} className="ml-auto">
+                {/* This is similar to your existing icon */}
+                <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </Button>
             </>
+          )}
+          {isSidebarCollapsed && (
+            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+              <svg className="w-4 h-4 transform rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </Button>
           )}
         </div>
       </aside>
