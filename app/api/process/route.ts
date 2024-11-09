@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Use the new runtime config syntax
 export const runtime = 'edge';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
@@ -20,7 +21,6 @@ export async function POST(request: NextRequest) {
     const apiUrl = 'https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process';
     let body: FormData | URLSearchParams;
 
-    // Prepare request body
     if (pdfFile) {
       console.log(`Processing PDF file: ${pdfFile.name}`);
       body = new FormData();
@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
       body.append('pdf_url', pdfUrl as string);
     }
 
-    // Make request to FastAPI backend
     console.log('Sending request to backend');
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -42,35 +41,27 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Backend error: ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    // Read the streaming response
-    console.log('Reading response stream');
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let finalResult = '';
-
-    if (reader) {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        // Decode and accumulate the response chunks
-        const chunk = decoder.decode(value, { stream: true });
-        finalResult += chunk;
-        
-        console.log(`Received chunk of ${chunk.length} bytes`);
-      }
+    const result = await response.text();
+    
+    // Validate that the response is proper HTML
+    if (!result.includes('<div class="analysis-container">')) {
+      console.error('Invalid response format:', result);
+      throw new Error('Invalid response format from backend');
     }
 
     const processingTime = (Date.now() - startTime) / 1000;
     console.log(`Processing completed in ${processingTime.toFixed(2)}s`);
 
-    // Return the complete HTML response
-    return new NextResponse(finalResult, {
+    // Return the HTML response
+    return new NextResponse(result, {
       headers: {
         'Content-Type': 'text/html',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
       },
     });
 
@@ -78,12 +69,20 @@ export async function POST(request: NextRequest) {
     const processingTime = (Date.now() - startTime) / 1000;
     console.error(`Error after ${processingTime.toFixed(2)}s:`, error);
     
+    // Return a more detailed error response
     return NextResponse.json(
       { 
         error: 'An error occurred while processing the request',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+        processingTime: `${processingTime.toFixed(2)}s`
       }, 
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        }
+      }
     );
   }
 }
