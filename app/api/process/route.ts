@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Configure for edge runtime and longer duration
-export const config = {
-  runtime: 'edge',
-  maxDuration: 60,
-};
+// Use the new runtime config syntax
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
