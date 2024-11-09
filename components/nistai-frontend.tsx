@@ -84,7 +84,7 @@ export function NistaiFrontend() {
       const formData = new FormData()
       formData.append('pdf_file', file)
 
-      fetch('https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process', {
+      fetch('/api/process', {
         method: 'POST',
         body: formData,
       })
@@ -128,7 +128,7 @@ export function NistaiFrontend() {
       const formData = new FormData()
       formData.append('pdf_file', file)
 
-      fetch('https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process', {
+      fetch('/api/process', {
         method: 'POST',
         headers: {"Accept":"text/html"},
         body: formData,
@@ -178,7 +178,7 @@ export function NistaiFrontend() {
       const formData = new FormData()
       formData.append('pdf_url', pdfUrl)
 
-      fetch('https://318aff70-02da-4da3-b9c1-5738277e6249-00-3pllg8z3mv4vc.riker.replit.dev/process', {
+      fetch('/api/process', {
         method: 'POST',
         headers: {"Accept":"text/html"},
         body: formData,
