@@ -1,7 +1,7 @@
 // app/api/nistai/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Anthropic } from '@anthropic-ai/sdk';
-
+import { formatHTMLResponse } from '@/utils/formatHTMLResponse';
 if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY is not set in environment variables');
 }
@@ -242,14 +242,14 @@ export async function POST(request: NextRequest) {
 }
 
 // Utility function for frontend use
-export function formatHTMLResponse(content: string): string {
-  if (!content.includes('<h1>')) {
-    return `
-      <h1>Security Analysis Report</h1>
-      <div class="analysis-content">
-        ${content}
-      </div>
-    `;
-  }
-  return content;
-}
+// export function formatHTMLResponse(content: string): string {
+//   if (!content.includes('<h1>')) {
+//     return `
+//       <h1>Security Analysis Report</h1>
+//       <div class="analysis-content">
+//         ${content}
+//       </div>
+//     `;
+//   }
+//   return content;
+// }
