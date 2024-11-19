@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
-
+export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   console.log('Starting PDF processing request');
