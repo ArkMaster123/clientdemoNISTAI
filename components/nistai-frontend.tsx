@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Shield, Upload, User } from 'lucide-react'
+import { ArrowRight, Brain, ChevronDown, ClipboardList, Home, LogOut, Menu, Rocket, Router, Shield, Upload, User } from 'lucide-react'
 import { CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, Activity } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+
 interface MenuItemProps {
   icon: React.ReactNode;
   label: string;
@@ -28,7 +29,36 @@ interface SubMenuItemProps {
   isCollapsed?: boolean;
 }
 
-
+interface AnalysisResponse {
+  response: {
+    executive_summary: string;
+    security_risks: Array<{
+      title: string;
+      details: string[];
+      impact: string;
+      severity: string;
+    }>;
+    security_gaps: Array<{
+      area: string;
+      current_state: string;
+      required_state: string;
+      priority: string;
+    }>;
+    nist_framework_scores: {
+      [key: string]: {
+        score: string;
+        findings: string[];
+        key_gaps: string;
+      };
+    };
+    recommendations: Array<{
+      title: string;
+      priority: string;
+      implementation_complexity: string;
+      expected_impact: string;
+    }>;
+  };
+}
 
 export function NistaiFrontend() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -36,117 +66,90 @@ export function NistaiFrontend() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [analysisStep, setAnalysisStep] = useState(0)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [resultHtml, setResultHtml] = useState<string | null>(null)
+  const [resultData, setResultData] = useState<AnalysisResponse | null>(null)
   const [pdfUrl, setPdfUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Add the useEffect right here, after all your state declarations
+  function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
   useEffect(() => {
     const checkScreenSize = () => {
-      if (window.innerWidth < 768) {  // 768px is typical mobile breakpoint
+      if (window.innerWidth < 768) {
         setIsSidebarCollapsed(true)
       }
     }
 
-    // Check on initial load
     checkScreenSize()
-
-    // Add listener for window resize
     window.addEventListener('resize', checkScreenSize)
-
-    // Cleanup listener
     return () => window.removeEventListener('resize', checkScreenSize)
   }, [])
 
-  
-
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed)
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       setSelectedFile(file)
       setUploadProgress(0)
       setAnalysisStep(1)
+      setAnalysisStep(2)
 
-      // Simulate file upload progress
-      let progress = 0
-      const interval = setInterval(() => {
-        progress += 10
-        setUploadProgress(progress)
-        if (progress >= 100) {
-          clearInterval(interval)
-          setAnalysisStep(2)
-        }
-      }, 500)
-
-      // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_file', file)
+      formData.append('file', file)
 
-      fetch('/api/process', {
-        method: 'POST',
-        body: formData,
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          return response.text()
+      try {
+        const response = await fetch('https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev/nistai', {
+          method: 'POST',
+          body: formData,
         })
-        .then(data => {
-          setResultHtml(data)
-          setAnalysisStep(4) // Analysis complete
-        })
-        .catch(error => {
-          console.error('Error:', error)
-          // Handle error (e.g., show error message to user)
-        })
+        setAnalysisStep(3)
+        await sleep(5000);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data: AnalysisResponse = await response.json()
+        setAnalysisStep(4)
+        setResultData(data)
+         // Analysis complete
+      } catch (error) {
+        console.error('Error:', error)
+        // Handle error (e.g., show error message to user)
+      }
     }
   }
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     const file = event.dataTransfer.files?.[0]
     if (file) {
       setSelectedFile(file)
       setUploadProgress(0)
       setAnalysisStep(1)
+      setAnalysisStep(2)
 
-      // Simulate file upload progress
-      let progress = 0
-      const interval = setInterval(() => {
-        progress += 10
-        setUploadProgress(progress)
-        if (progress >= 100) {
-          clearInterval(interval)
-          setAnalysisStep(2)
-        }
-      }, 500)
-
-      // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_file', file)
+      formData.append('file', file)
 
-      fetch('/api/process', {
-        method: 'POST',
-        headers: {"Accept":"text/html"},
-        body: formData,
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          return response.text()
+      try {
+        const response = await fetch('https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev/nistai', {
+          method: 'POST',
+          body: formData,
         })
-        .then(data => {
-          setResultHtml(data)
-          setAnalysisStep(4) // Analysis complete
-        })
-        .catch(error => {
-          console.error('Error:', error)
-          // Handle error (e.g., show error message to user)
-        })
+
+        setAnalysisStep(3)
+        await sleep(5000);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data: AnalysisResponse = await response.json()
+        setAnalysisStep(4) // Analysis complete
+        setResultData(data)
+      } catch (error) {
+        console.error('Error:', error)
+        // Handle error (e.g., show error message to user)
+      }
     }
   }
 
@@ -158,230 +161,356 @@ export function NistaiFrontend() {
     fileInputRef.current?.click()
   }
 
-  const handleUrlSubmit = () => {
+  const handleUrlSubmit = async () => {
     if (pdfUrl) {
       setUploadProgress(0)
       setAnalysisStep(1)
+      setAnalysisStep(2)
 
-      // Simulate upload progress
-      let progress = 0
-      const interval = setInterval(() => {
-        progress += 10
-        setUploadProgress(progress)
-        if (progress >= 100) {
-          clearInterval(interval)
-          setAnalysisStep(2)
-        }
-      }, 500)
-
-      // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_url', pdfUrl)
+      // formData.append('pdf_url', pdfUrl)
 
-      fetch('/api/process', {
-        method: 'POST',
-        headers: {"Accept":"text/html"},
-        body: formData,
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          return response.text()
+      try {
+        const response = await fetch(`https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev/nistai_url?pdf_url=${pdfUrl}`, {
+          method: 'POST'        
         })
-        .then(data => {
-          setResultHtml(data)
-          setAnalysisStep(4) // Analysis complete
-        })
-        .catch(error => {
-          console.error('Error:', error)
-          // Handle error
-        })
+
+        setAnalysisStep(3)
+        await sleep(5000);
+
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data: AnalysisResponse = await response.json()
+        
+        setAnalysisStep(4) // Analysis complete
+        setResultData(data)
+      } catch (error) {
+        console.error('Error:', error)
+        // Handle error
+      }
     }
   }
 
-  function AnalysisResults({ htmlContent }) {
-    const extractContent = (html, tag, className = '') => {
-      const regex = className 
-        ? new RegExp(`<${tag}[^>]*class="${className}"[^>]*>(.*?)<\/${tag}>`, 'gs')
-        : new RegExp(`<${tag}[^>]*>(.*?)<\/${tag}>`, 'gs');
-      const matches = html.match(regex);
-      return matches ? matches.map(match => {
-        // Remove any HTML tags and trim
-        return match.replace(/<[^>]*>/g, '').trim();
-      }) : [];
-    };
-  
-    // Extract sections
-    const originalTitle = extractContent(htmlContent, 'h1')[0];
-    // Clean up title - remove any processing text if present
-    const title = originalTitle.includes('Security Analysis') 
-      ? originalTitle.substring(originalTitle.indexOf('Security Analysis') - 30)
-      : originalTitle;
-  
-    const summary = extractContent(htmlContent, 'p')[0]; // Get first paragraph for summary
+  // function AnalysisResults({ data }: { data: AnalysisResponse }) {
+  //   const { response } = data;
     
-    // Extract all list items and paragraphs
-    const allListItems = extractContent(htmlContent, 'li');
-    const allParagraphs = extractContent(htmlContent, 'p');
-    
-    // Find the Recover index as our anchor point
-    const recoverIndex = allListItems.findIndex(item => item.startsWith('Recover:'));
+  //   return (
+  //     <div className="space-y-6">
+  //       {/* Header Section */}
+  //       <Card className="bg-blue-600 text-white">
+  //         <CardContent className="p-6">
+  //           <h1 className="text-2xl font-bold mb-4">Security Analysis Report</h1>
+  //           <p className="text-lg opacity-90">{response.executive_summary}</p>
+  //         </CardContent>
+  //       </Card>
   
-    // Extract risks and gaps (everything before NIST scores)
-    const firstNistScoreIndex = allListItems.findIndex(item => item.includes('/5'));
-    const securityRisks = allListItems.slice(0, 6);
-    const securityGaps = allListItems.slice(6, firstNistScoreIndex);
+  //       {/* Main Content Grid */}
+  //       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  //         {/* Security Risks */}
+  //         <Card>
+  //           <CardHeader>
+  //             <CardTitle className="flex items-center text-red-600">
+  //               <AlertTriangle className="mr-2" /> Security Risks and Challenges
+  //             </CardTitle>
+  //           </CardHeader>
+  //           <CardContent>
+  //             <ul className="space-y-4">
+  //               {response.security_risks.map((risk, index) => (
+  //                 <li key={index} className="border-b pb-4 last:border-b-0 last:pb-0">
+  //                   <h3 className="font-semibold text-lg mb-2">{risk.title}</h3>
+  //                   <ul className="list-disc pl-5 mb-2">
+  //                     {risk.details.map((detail, detailIndex) => (
+  //                       <li key={detailIndex}>{detail}</li>
+  //                     ))}
+  //                   </ul>
+  //                   <p><strong>Impact:</strong> {risk.impact}</p>
+  //                   <p><strong>Severity:</strong> {risk.severity}</p>
+  //                 </li>
+  //               ))}
+  //             </ul>
+  //           </CardContent>
+  //         </Card>
   
-    // Extract NIST scores
-    const nistScores = allListItems
-      .filter(item => item.includes('/5'))
-      .map(score => {
-        const [scoreText, description] = score.split('-').map(s => s.trim());
-        const scoreMatch = scoreText.match(/(\d+)\/5/);
-        const scoreNum = scoreMatch ? parseInt(scoreMatch[1]) : 0;
-        const category = scoreText.split(':')[0].trim();
-        
-        return {
-          category,
-          score: scoreNum,
-          description: description || scoreText.split(':')[1]?.trim() || ''
-        };
-      });
+  //         {/* Security Gaps */}
+  //         <Card>
+  //           <CardHeader>
+  //             <CardTitle className="flex items-center text-orange-600">
+  //               <Shield className="mr-2" /> Security Gaps
+  //             </CardTitle>
+  //           </CardHeader>
+  //           <CardContent>
+  //             <ul className="space-y-4">
+  //               {response.security_gaps.map((gap, index) => (
+  //                 <li key={index} className="border-b pb-4 last:border-b-0 last:pb-0">
+  //                   <h3 className="font-semibold text-lg mb-2">{gap.area}</h3>
+  //                   <p><strong>Current State:</strong> {gap.current_state}</p>
+  //                   <p><strong>Required State:</strong> {gap.required_state}</p>
+  //                   <p><strong>Priority:</strong> {gap.priority}</p>
+  //                 </li>
+  //               ))}
+  //             </ul>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
   
-    // Get recommendations and overall risk rating
-    const riskRating = allParagraphs.find(p => p.includes('Overall Risk Rating'))?.trim();
+  //       {/* NIST Scores */}
+  //       <Card>
+  //         <CardHeader>
+  //           <CardTitle className="flex items-center text-blue-600">
+  //             <Activity className="mr-2" /> NIST Framework Scores
+  //           </CardTitle>
+  //         </CardHeader>
+  //         <CardContent>
+  //           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+  //             {Object.entries(response.nist_framework_scores).map(([category, data], index) => {
+  //               const getCategoryColor = (cat: string) => {
+  //                 switch (cat.toLowerCase()) {
+  //                   case 'recover': return '#7df49f';
+  //                   case 'identify': return '#4BB2E0';
+  //                   case 'protect': return '#918CEA';
+  //                   case 'detect': return '#FAB746';
+  //                   case 'respond': return '#E57676';
+  //                   default: return '#4BB2E0'; // Default to Identify color
+  //                 }
+  //               };
+                
+  //               const categoryColor = getCategoryColor(category);
+                
+  //               return (
+  //                 <Card key={index} className="bg-gray-50">
+  //                   <CardContent className="p-4">
+  //                     <h3 className="font-semibold mb-2 capitalize">{category}</h3>
+  //                     <div className="flex space-x-1 mb-2">
+  //                       {[1, 2, 3, 4, 5].map((n) => (
+  //                         <div
+  //                           key={n}
+  //                           className={`h-2 w-full rounded ${
+  //                             n <= parseInt(data.score) ? `bg-[${categoryColor}]` : 'bg-gray-200'
+  //                           }`}
+  //                           // style={{ backgroundColor: categoryColor }}
+  //                         />
+  //                       ))}
+  //                     </div>
+  //                     <div className="flex justify-between items-center mb-2">
+  //                       <span className="text-sm font-medium">{data.score}/5</span>
+  //                     </div>
+  //                     <div className="text-sm text-gray-600 mt-2">
+  //                       <strong>Findings:</strong>
+  //                       <ul className="list-disc pl-5">
+  //                         {data.findings.map((finding, findingIndex) => (
+  //                           <li key={findingIndex}>{finding}</li>
+  //                         ))}
+  //                       </ul>
+  //                       <strong>Key Gaps:</strong> {data.key_gaps}
+  //                     </div>
+  //                   </CardContent>
+  //                 </Card>
+  //               );
+  //             })}
+  //           </div>
+  //         </CardContent>
+  //       </Card>
+  
+  //       {/* Recommendations */}
+  //       <Card>
+  //         <CardHeader>
+  //           <CardTitle className="flex items-center text-green-600">
+  //             <ArrowRight className="mr-2" /> Recommendations
+  //           </CardTitle>
+  //         </CardHeader>
+  //         <CardContent>
+  //           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  //             {response.recommendations.map((recommendation, index) => (
+  //               <Card key={index} className="bg-green-50">
+  //                 <CardContent className="p-4">
+  //                   <h3 className="font-semibold mb-2">{recommendation.title}</h3>
+  //                   <p><strong>Priority:</strong> {recommendation.priority}</p>
+  //                   <p><strong>Implementation Complexity:</strong> {recommendation.implementation_complexity}</p>
+  //                   <p><strong>Expected Impact:</strong> {recommendation.expected_impact}</p>
+  //                 </CardContent>
+  //               </Card>
+  //             ))}
+  //           </div>
+  //         </CardContent>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
+
+  function AnalysisResults({ data }: { data: AnalysisResponse }) {
+    const { response } = data;
+    const [streamProgress, setStreamProgress] = useState(0);
     
-    // Get nested recommendations if they exist
-    const nestedRecsIndex = allListItems.findIndex(item => 
-      item.includes('Recommended implementation of:')
-    );
-    
-    let recommendations = [];
-    if (nestedRecsIndex !== -1) {
-      recommendations = allListItems
-        .slice(nestedRecsIndex + 1)
-        .filter(item => 
-          item.includes('Enhanced') ||
-          item.includes('Multi-factor') ||
-          item.includes('Regular security') ||
-          item.includes('Comprehensive') ||
-          item.includes('Third-party')
-        );
-    } else {
-      // Otherwise look for class="recommendations" content
-      const recsContent = extractContent(htmlContent, 'p', 'recommendations')[0];
-      if (recsContent) {
-        recommendations = recsContent
-          .replace('Priority recommendations:', '')
-          .split('-')
-          .filter(item => item.trim())
-          .map(item => item.trim());
+    useEffect(() => {
+      const totalSteps = 5; // Executive Summary, Security Risks, Security Gaps, NIST Scores, Recommendations
+      const interval = setInterval(() => {
+        setStreamProgress(prev => {
+          if (prev < totalSteps) {
+            return prev + 1;
+          }
+          clearInterval(interval);
+          return prev;
+        });
+      }, 1000); // Adjust this value to control the speed of the streaming effect
+      
+      return () => clearInterval(interval);
+    }, []);
+
+    const getCategoryColor = (cat: string) => {
+      switch (cat.toLowerCase()) {
+        case 'recover': return '#7df49f';
+        case 'identify': return '#4BB2E0';
+        case 'protect': return '#918CEA';
+        case 'detect': return '#FAB746';
+        case 'respond': return '#E57676';
+        default: return '#4BB2E0'; // Default to Identify color
       }
-    }
-  
+    };
+
     return (
       <div className="space-y-6">
         {/* Header Section */}
-        <Card className="bg-blue-600 text-white">
-          <CardContent className="p-6">
-            <h1 className="text-2xl font-bold mb-4">{title}</h1>
-            <p className="text-lg opacity-90">{summary}</p>
-          </CardContent>
-        </Card>
+        {streamProgress >= 1 && (
+          <Card className="bg-blue-600 text-white">
+            <CardContent className="p-6">
+              <h1 className="text-2xl font-bold mb-4">Security Analysis Report</h1>
+              <p className="text-lg opacity-90">{response.executive_summary}</p>
+            </CardContent>
+          </Card>
+        )}
   
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Security Risks */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-red-600">
-                <AlertTriangle className="mr-2" /> Security Risks and Challenges
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {securityRisks.map((risk, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>{risk}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {streamProgress >= 2 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-red-600">
+                  <AlertTriangle className="mr-2" /> Security Risks and Challenges
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-4">
+                  {response.security_risks.map((risk, index) => (
+                    <li key={index} className="border-b pb-4 last:border-b-0 last:pb-0">
+                      <h3 className="font-semibold text-lg mb-2">{risk.title}</h3>
+                      <ul className="list-disc pl-5 mb-2">
+                        {risk.details.map((detail, detailIndex) => (
+                          <li key={detailIndex}>{detail}</li>
+                        ))}
+                      </ul>
+                      <p><strong>Impact:</strong> {risk.impact}</p>
+                      <p><strong>Severity:</strong> {risk.severity}</p>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
   
           {/* Security Gaps */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center text-orange-600">
-                <Shield className="mr-2" /> Security Gaps
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {securityGaps.map((gap, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>{gap}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {streamProgress >= 3 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center text-orange-600">
+                  <Shield className="mr-2" /> Security Gaps
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-4">
+                  {response.security_gaps.map((gap, index) => (
+                    <li key={index} className="border-b pb-4 last:border-b-0 last:pb-0">
+                      <h3 className="font-semibold text-lg mb-2">{gap.area}</h3>
+                      <p><strong>Current State:</strong> {gap.current_state}</p>
+                      <p><strong>Required State:</strong> {gap.required_state}</p>
+                      <p><strong>Priority:</strong> {gap.priority}</p>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
   
         {/* NIST Scores */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center text-blue-600">
-              <Activity className="mr-2" /> NIST Framework Scores
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {nistScores.map(({ category, score, description }, index) => (
-                <Card key={index} className="bg-gray-50">
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-2">{category}</h3>
-                    <div className="flex space-x-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <div
-                          key={n}
-                          className={`h-2 w-full rounded ${
-                            n <= score ? 'bg-blue-600' : 'bg-gray-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">{score}/5</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">{description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {streamProgress >= 4 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-blue-600">
+                <Activity className="mr-2" /> NIST Framework Scores
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {Object.entries(response.nist_framework_scores).map(([category, data], index) => {
+                  const categoryColor = getCategoryColor(category);
+                  
+                  return (
+                    <Card key={index} className="bg-gray-50">
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-2 capitalize">{category}</h3>
+                        <div className="flex space-x-1 mb-2">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <div
+                              key={n}
+                              className={`h-2 w-full rounded ${
+                                n <= parseInt(data.score)
+                                ? categoryColor === "#7df49f"
+                                   ? 'bg-custom-green'
+                                   : categoryColor === "#4BB2E0"
+                                   ? 'bg-custom-blue'
+                                   : categoryColor === "#918CEA"
+                                   ? 'bg-custom-purple'
+                                   : categoryColor === "#FAB746"
+                                   ? 'bg-custom-yellow'
+                                   : 'bg-custom-red'
+                                : 'bg-gray-200'
+                              }`}
+                              // style={{ backgroundColor: categoryColor }}
+                            />
+                          ))}
+                        </div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium">{data.score}/5</span>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-2">
+                          <strong>Findings:</strong>
+                          <ul className="list-disc pl-5">
+                            {data.findings.map((finding, findingIndex) => (
+                              <li key={findingIndex}>{finding}</li>
+                            ))}
+                          </ul>
+                          <strong>Key Gaps:</strong> {data.key_gaps}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
   
         {/* Recommendations */}
-        {recommendations.length > 0 && (
+        {streamProgress >= 5 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center text-green-600">
-                <ArrowRight className="mr-2" /> Priority Recommendations
+                <ArrowRight className="mr-2" /> Recommendations
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {recommendations.map((recommendation, index) => (
+                {response.recommendations.map((recommendation, index) => (
                   <Card key={index} className="bg-green-50">
                     <CardContent className="p-4">
-                      <p className="flex items-start">
-                        <span className="mr-2 font-bold">{index + 1}.</span>
-                        <span>{recommendation}</span>
-                      </p>
+                      <h3 className="font-semibold mb-2">{recommendation.title}</h3>
+                      <p><strong>Priority:</strong> {recommendation.priority}</p>
+                      <p><strong>Implementation Complexity:</strong> {recommendation.implementation_complexity}</p>
+                      <p><strong>Expected Impact:</strong> {recommendation.expected_impact}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -389,19 +518,11 @@ export function NistaiFrontend() {
             </CardContent>
           </Card>
         )}
-  
-        {/* Overall Risk Rating */}
-        {riskRating && (
-          <Card className="bg-red-50">
-            <CardContent className="p-6">
-              <p className="text-lg font-semibold text-red-600">{riskRating}</p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     );
   }
 
+  const router = useRouter()
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -454,9 +575,8 @@ export function NistaiFrontend() {
           {!isSidebarCollapsed && (
             <>
               <div className="w-8 h-8 bg-gray-300 rounded-full flex-shrink-0"></div>
-              <span className="ml-3 font-medium">John Doe</span>
+              <span className="ml-3 font-medium" onClick={()=>{router.push("/profile")}}>John Doe</span>
               <Button variant="ghost" size="icon" onClick={toggleSidebar} className="ml-auto">
-                {/* This is similar to your existing icon */}
                 <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                   <polyline points="12 5 19 12 12 19"></polyline>
@@ -478,14 +598,12 @@ export function NistaiFrontend() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto p-8">
-          
-
           {/* Welcome Card */}
           <Card className="bg-[#080415] text-white mb-6 overflow-hidden">
             <CardContent className="p-8 relative">
               <div className="relative z-10">
                 <h2 className="text-4xl font-bold mb-2">Compliance is Complex</h2>
-                <p className="text-xl opacity-80">Lets simplify the terms...</p>
+                <p className="text-xl opacity-80">Let&apos;s simplify the terms...</p>
               </div>
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
@@ -592,22 +710,22 @@ export function NistaiFrontend() {
           )}
 
           {/* Results Container */}
-{resultHtml ? (
-  <Card className="mb-8">
-    <CardContent className="p-6">
-      <AnalysisResults htmlContent={resultHtml} />
-    </CardContent>
-  </Card>
-) : (
-  <Card className="mb-8">
-    <CardContent className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
-      <div id="results-container">
-        <p className="text-gray-500">No results available yet. Complete the analysis to see your assessment.</p>
-      </div>
-    </CardContent>
-  </Card>
-)}
+          {resultData ? (
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <AnalysisResults data={resultData} />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
+                <div id="results-container">
+                  <p className="text-gray-500">No results available yet. Complete the analysis to see your assessment.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>
