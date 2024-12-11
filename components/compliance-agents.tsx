@@ -12,11 +12,12 @@ const API_ENDPOINT = "https://dev.api.brain.whataidea.com/api/analysis/cyber-com
 export function ComplianceAgents() {
   const [files, setFiles] = useState<File[]>([])
   const [companyName, setCompanyName] = useState('')
+  const [reportData, setReportData] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'pending' | 'uploading' | 'completed' | 'failed'>>({})
   const [isProcessing, setIsProcessing] = useState(false)
-  const [reportData, setReportData] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const validateFile = (file: File) => {
     const allowedTypes = ['application/pdf', 'application/json']
