@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { AlertTriangle, Upload, FileText, File, Trash2, Shield } from 'lucide-react'
 
-const API_ENDPOINT = process.env.NEXT_PUBLIC_COMPLIANCE_API_ENDPOINT
+const API_ENDPOINT = "https://dev.api.brain.whataidea.com/api/analysis/cyber-compliance"
 
 export function ComplianceAgents() {
   const [files, setFiles] = useState<File[]>([])
@@ -19,9 +19,8 @@ export function ComplianceAgents() {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const newFiles = Array.from(event.target.files).filter(
-        file => file.type === 'application/pdf' || file.type === 'application/json'
-      )
+      const newFiles = Array.from(event.target.files)
+      newFiles.forEach(validateFile)
       setFiles(prevFiles => [...prevFiles, ...newFiles])
     }
   }
@@ -54,18 +53,22 @@ export function ComplianceAgents() {
 
     const formData = new FormData()
     formData.append('companyName', companyName)
-    files.forEach((file, index) => {
-      formData.append(`file${index}`, file)
+    files.forEach(file => {
+      formData.append('files', file)
     })
 
     try {
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         body: formData,
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json()
+        throw new Error(`API error: ${errorData.message}`)
       }
 
       const result = await response.text()
@@ -314,3 +317,76 @@ function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
     </div>
   )
 }
+  const validateFile = (file: File) => {
+    const allowedTypes = ['application/pdf', 'application/json']
+    const maxSize = 10 * 1024 * 1024 // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`Invalid file type for ${file.name}. Only PDF and JSON files are allowed.`)
+    }
+
+    if (file.size > maxSize) {
+      throw new Error(`File size exceeds the 10MB limit for ${file.name}.`)
+    }
+  }
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
+  const [uploadStatus, setUploadStatus] = useState<Record<string, 'pending' | 'uploading' | 'completed' | 'failed'>>({})
+
+  const updateUploadProgress = (fileName: string, progress: number) => {
+    setUploadProgress(prev => ({...prev, [fileName]: progress}))
+  }
+
+  const updateUploadStatus = (fileName: string, status: 'pending' | 'uploading' | 'completed' | 'failed') => {
+    setUploadStatus(prev => ({...prev, [fileName]: status}))
+  }
+  const downloadReport = async (format: 'pdf' | 'docx' | 'md') => {
+    const response = await fetch(`${API_ENDPOINT}/download?format=${format}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to download report')
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(new Blob([blob]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `compliance_report.${format}`)
+    document.body.appendChild(link)
+    link.click()
+    link.parentNode.removeChild(link)
+  }
+      {isProcessing && (
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Upload Progress</h3>
+            {files.map((file, index) => (
+              <div key={file.name} className="mb-4">
+                <div className="flex justify-between mb-2">
+                  <span>{file.name}</span>
+                  <span>{uploadStatus[file.name]}</span>
+                </div>
+                <Progress value={uploadProgress[file.name]} className="w-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+      {reportData && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Cyber Insurance Compliance Report</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportDisplay reportData={reportData} companyName={companyName} />
+            <div className="mt-6 space-x-4">
+              <Button onClick={() => downloadReport('pdf')}>Download PDF</Button>
+              <Button onClick={() => downloadReport('docx')}>Download Word</Button>
+              <Button onClick={() => downloadReport('md')}>Download Markdown</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
