@@ -27,9 +27,8 @@ export function ComplianceAgents() {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
-    const droppedFiles = Array.from(event.dataTransfer.files).filter(
-      file => file.type === 'application/pdf' || file.type === 'application/json'
-    )
+    const droppedFiles = Array.from(event.dataTransfer.files)
+    droppedFiles.forEach(validateFile)
     setFiles(prevFiles => [...prevFiles, ...droppedFiles])
   }
 
