@@ -12,10 +12,53 @@ const API_ENDPOINT = "https://dev.api.brain.whataidea.com/api/analysis/cyber-com
 export function ComplianceAgents() {
   const [files, setFiles] = useState<File[]>([])
   const [companyName, setCompanyName] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
+  const [uploadStatus, setUploadStatus] = useState<Record<string, 'pending' | 'uploading' | 'completed' | 'failed'>>({})
   const [isProcessing, setIsProcessing] = useState(false)
   const [reportData, setReportData] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const validateFile = (file: File) => {
+    const allowedTypes = ['application/pdf', 'application/json']
+    const maxSize = 10 * 1024 * 1024 // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(`Invalid file type for ${file.name}. Only PDF and JSON files are allowed.`)
+    }
+
+    if (file.size > maxSize) {
+      throw new Error(`File size exceeds the 10MB limit for ${file.name}.`)
+    }
+  }
+
+  const updateUploadProgress = (fileName: string, progress: number) => {
+    setUploadProgress(prev => ({...prev, [fileName]: progress}))
+  }
+
+  const updateUploadStatus = (fileName: string, status: 'pending' | 'uploading' | 'completed' | 'failed') => {
+    setUploadStatus(prev => ({...prev, [fileName]: status}))
+  }
+
+  const downloadReport = async (format: 'pdf' | 'docx' | 'md') => {
+    const response = await fetch(`${API_ENDPOINT}/download?format=${format}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to download report')
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(new Blob([blob]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `compliance_report.${format}`)
+    document.body.appendChild(link)
+    link.click()
+    link.parentNode.removeChild(link)
+  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -316,48 +359,6 @@ function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
     </div>
   )
 }
-  const validateFile = (file: File) => {
-    const allowedTypes = ['application/pdf', 'application/json']
-    const maxSize = 10 * 1024 * 1024 // 10MB
-
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error(`Invalid file type for ${file.name}. Only PDF and JSON files are allowed.`)
-    }
-
-    if (file.size > maxSize) {
-      throw new Error(`File size exceeds the 10MB limit for ${file.name}.`)
-    }
-  }
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
-  const [uploadStatus, setUploadStatus] = useState<Record<string, 'pending' | 'uploading' | 'completed' | 'failed'>>({})
-
-  const updateUploadProgress = (fileName: string, progress: number) => {
-    setUploadProgress(prev => ({...prev, [fileName]: progress}))
-  }
-
-  const updateUploadStatus = (fileName: string, status: 'pending' | 'uploading' | 'completed' | 'failed') => {
-    setUploadStatus(prev => ({...prev, [fileName]: status}))
-  }
-  const downloadReport = async (format: 'pdf' | 'docx' | 'md') => {
-    const response = await fetch(`${API_ENDPOINT}/download?format=${format}`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to download report')
-    }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(new Blob([blob]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `compliance_report.${format}`)
-    document.body.appendChild(link)
-    link.click()
-    link.parentNode.removeChild(link)
-  }
       {isProcessing && (
         <Card className="mb-6">
           <CardContent className="p-6">
