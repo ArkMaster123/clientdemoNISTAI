@@ -95,3 +95,24 @@
 
 # 2024-11-07 20:38:15.545094
 +/ask can you summarise what is happening here?
+
+# 2024-12-11 21:19:16.946028
++y
+
+# 2024-12-11 21:34:39.420376
++n
+
+# 2024-12-11 21:34:50.908297
++/add app
+
+# 2024-12-11 21:35:04.803531
++/add components
+
+# 2024-12-11 21:35:09.403703
++/add hooks
+
+# 2024-12-11 21:35:20.827179
++/add README.md
+
+# 2024-12-11 21:36:00.528267
++update the readme for anyone to know about this app as if its their first time and can pick up code and easily cange anything make it mega clear and as much detail as required for anyone
