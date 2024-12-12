@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import ReactMarkdown from 'react-markdown'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { 
   AlertTriangle, 
   Upload, 
@@ -419,29 +420,56 @@ function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
 
       <ReactMarkdown
         components={{
-          h1: ({node, ...props}) => (
+          h1: ({node, children, ...props}) => (
             <Card className="mb-4">
               <CardContent className="p-4">
-                <h2 className="text-xl font-bold flex items-center" {...props}>
-                  {getIcon(props.children as string)}
-                  {props.children}
+                <h2 className="text-xl font-bold flex items-center">
+                  {getIcon(String(children))}
+                  {children}
                 </h2>
               </CardContent>
             </Card>
           ),
-          h2: ({node, ...props}) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-          h3: ({node, ...props}) => <h4 className="text-md font-semibold mt-3 mb-1" {...props} />,
-          p: ({node, ...props}) => <p className="mb-4" {...props} />,
-          ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-4" {...props} />,
-          ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-4" {...props} />,
-          li: ({node, ...props}) => <li className="mb-1" {...props} />,
-          blockquote: ({node, ...props}) => (
-            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4" {...props} />
+          h2: ({node, children, ...props}) => (
+            <h3 className="text-lg font-semibold mt-4 mb-2" {...props}>
+              {children}
+            </h3>
+          ),
+          h3: ({node, children, ...props}) => (
+            <h4 className="text-md font-semibold mt-3 mb-1" {...props}>
+              {children}
+            </h4>
+          ),
+          p: ({node, children, ...props}) => (
+            <p className="mb-4" {...props}>
+              {children}
+            </p>
+          ),
+          ul: ({node, children, ...props}) => (
+            <ul className="list-disc pl-5 mb-4" {...props}>
+              {children}
+            </ul>
+          ),
+          ol: ({node, children, ...props}) => (
+            <ol className="list-decimal pl-5 mb-4" {...props}>
+              {children}
+            </ol>
+          ),
+          li: ({node, children, ...props}) => (
+            <li className="mb-1" {...props}>
+              {children}
+            </li>
+          ),
+          blockquote: ({node, children, ...props}) => (
+            <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4" {...props}>
+              {children}
+            </blockquote>
           ),
           code({node, inline, className, children, ...props}) {
             const match = /language-(\w+)/.exec(className || '')
             return !inline && match ? (
               <SyntaxHighlighter
+                style={vs}
                 language={match[1]}
                 PreTag="div"
                 {...props}
@@ -454,28 +482,34 @@ function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
               </code>
             )
           },
-          table: ({node, ...props}) => (
+          table: ({node, children, ...props}) => (
             <div className="overflow-x-auto mb-4">
-              <table className="min-w-full divide-y divide-gray-200" {...props} />
+              <table className="min-w-full divide-y divide-gray-200" {...props}>
+                {children}
+              </table>
             </div>
           ),
-          th: ({node, ...props}) => (
-            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" {...props} />
+          th: ({node, children, ...props}) => (
+            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" {...props}>
+              {children}
+            </th>
           ),
-          td: ({node, ...props}) => (
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" {...props} />
+          td: ({node, children, ...props}) => (
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" {...props}>
+              {children}
+            </td>
           ),
-          strong: ({node, ...props}) => {
-            const content = props.children as string
+          strong: ({node, children}) => {
+            const content = String(children)
             if (content.toLowerCase().includes('status:')) {
               const status = content.split(':')[1].trim()
               return (
-                <strong {...props}>
+                <strong>
                   Status: {getComplianceStatus(status)}
                 </strong>
               )
             }
-            return <strong {...props} />
+            return <strong>{children}</strong>
           },
         }}
         className="markdown-content"
