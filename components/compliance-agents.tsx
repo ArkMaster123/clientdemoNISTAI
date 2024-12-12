@@ -61,40 +61,25 @@ export function ComplianceAgents() {
     setUploadProgress(prev => ({...prev, [fileName]: progress}))
   }
 
-  const simulateProcessingProgress = () => {
-    setStage('processing')
-    setProcessingProgress(0)
+  const updateProcessingProgress = (targetProgress: number, duration: number) => {
+    const startProgress = processingProgress
+    const startTime = Date.now()
     
-    // Phase 1: 0-30% in 10 seconds
-    const phase1 = setInterval(() => {
-      setProcessingProgress(prev => {
-        if (prev < 30) return prev + 1
-        clearInterval(phase1)
-        return 30
-      })
-    }, 333)
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(
+        startProgress + ((targetProgress - startProgress) * elapsed) / duration,
+        targetProgress
+      )
+      
+      setProcessingProgress(progress)
+      
+      if (progress >= targetProgress) {
+        clearInterval(interval)
+      }
+    }, 50)
 
-    // Phase 2: 30-70% in 20 seconds
-    setTimeout(() => {
-      const phase2 = setInterval(() => {
-        setProcessingProgress(prev => {
-          if (prev < 70) return prev + 1
-          clearInterval(phase2)
-          return 70
-        })
-      }, 500)
-    }, 10000)
-
-    // Phase 3: 70-95% in 10 seconds
-    setTimeout(() => {
-      const phase3 = setInterval(() => {
-        setProcessingProgress(prev => {
-          if (prev < 95) return prev + 1
-          clearInterval(phase3)
-          return 95
-        })
-      }, 400)
-    }, 30000)
+    return interval
   }
 
 
@@ -130,6 +115,7 @@ export function ComplianceAgents() {
     setIsProcessing(true)
     setErrorMessage(null)
     setStage('uploading')
+    setProcessingProgress(0)
     
     // Initialize progress for each file
     const initialProgress = {}
@@ -138,26 +124,27 @@ export function ComplianceAgents() {
     })
     setFileUploadProgress(initialProgress)
 
-    // Simulate upload progress for each file
-    files.forEach(file => {
-      let progress = 0
-      const interval = setInterval(() => {
-        progress += 5
-        if (progress <= 100) {
+    const formData = new FormData()
+    formData.append('companyName', companyName)
+    
+    // Upload files with real progress tracking
+    for (const file of files) {
+      const xhr = new XMLHttpRequest()
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = (event.loaded / event.total) * 100
           setFileUploadProgress(prev => ({
             ...prev,
             [file.name]: progress
           }))
-        } else {
-          clearInterval(interval)
         }
-      }, 200)
-    })
+      })
+      
+      formData.append('files', file)
+    }
 
-    // Start processing simulation after "upload"
-    setTimeout(() => {
-      simulateProcessingProgress()
-    }, files.length * 4000 + 1000)
+    setStage('processing')
 
     try {
       const formData = new FormData()
@@ -166,6 +153,9 @@ export function ComplianceAgents() {
         formData.append('files', file)
       })
 
+      // Start processing animation
+      updateProcessingProgress(30, 1000) // Quick jump to 30%
+      
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -178,9 +168,13 @@ export function ComplianceAgents() {
         throw new Error(`API error: ${response.status}`)
       }
 
+      // Quickly complete the progress bar
+      updateProcessingProgress(100, 500)
+      
       const result = await response.json()
       
-      setProcessingProgress(100)
+      // Small delay before showing results for smooth transition
+      await new Promise(resolve => setTimeout(resolve, 500))
       setStage('completed')
       
       // Process consolidated response with source attribution
@@ -323,7 +317,10 @@ export function ComplianceAgents() {
                 <h3 className="text-lg font-semibold mb-4">Processing Documents</h3>
                 <Progress value={processingProgress} className="w-full mb-2" />
                 <p className="text-sm text-gray-600">
-                  Analyzing company documents for cyber insurance compliance... {processingProgress}%
+                  {processingProgress < 30 && "Initializing analysis..."}
+                  {processingProgress >= 30 && processingProgress < 90 && "Analyzing company documents for compliance..."}
+                  {processingProgress >= 90 && "Finalizing assessment..."}
+                  {" "}{Math.round(processingProgress)}%
                 </p>
               </>
             )}
