@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Home, Shield, Brain, User, ChevronDown } from 'lucide-react';
+import { Home, Shield, Brain, User, ChevronDown, FileCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface MenuItemProps {
@@ -81,6 +81,9 @@ function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }: Sub
       case 'NISTAI':
         router.push('/nistai');
         break;
+      case 'Compliance Agents':
+        router.push('/compliance-agents');
+        break;
     }
   };
 
@@ -140,6 +143,11 @@ export function Sidebar() {
             icon={<Brain size={20} />}
             label="NISTAI"
             isActive
+            isCollapsed={isSidebarCollapsed}
+          />
+          <SubMenuItem
+            icon={<FileCheck size={20} />}
+            label="Compliance Agents"
             isCollapsed={isSidebarCollapsed}
           />
         </MenuItem>
