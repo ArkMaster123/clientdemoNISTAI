@@ -38,8 +38,9 @@ export function ComplianceAgents() {
   const [reportData, setReportData] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({})
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({})
+  const [fileUploadProgress, setFileUploadProgress] = useState<Record<string, number>>({})
+  const [processingProgress, setProcessingProgress] = useState<number>(0)
+  const [stage, setStage] = useState<'uploading' | 'processing' | 'completed' | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -60,8 +61,40 @@ export function ComplianceAgents() {
     setUploadProgress(prev => ({...prev, [fileName]: progress}))
   }
 
-  const updateUploadStatus = (fileName: string, status: 'pending' | 'uploading' | 'completed' | 'failed') => {
-    setUploadStatus(prev => ({...prev, [fileName]: status}))
+  const simulateProcessingProgress = () => {
+    setStage('processing')
+    setProcessingProgress(0)
+    
+    // Phase 1: 0-30% in 10 seconds
+    const phase1 = setInterval(() => {
+      setProcessingProgress(prev => {
+        if (prev < 30) return prev + 1
+        clearInterval(phase1)
+        return 30
+      })
+    }, 333)
+
+    // Phase 2: 30-70% in 20 seconds
+    setTimeout(() => {
+      const phase2 = setInterval(() => {
+        setProcessingProgress(prev => {
+          if (prev < 70) return prev + 1
+          clearInterval(phase2)
+          return 70
+        })
+      }, 500)
+    }, 10000)
+
+    // Phase 3: 70-95% in 10 seconds
+    setTimeout(() => {
+      const phase3 = setInterval(() => {
+        setProcessingProgress(prev => {
+          if (prev < 95) return prev + 1
+          clearInterval(phase3)
+          return 95
+        })
+      }, 400)
+    }, 30000)
   }
 
 
@@ -96,14 +129,43 @@ export function ComplianceAgents() {
     if (files.length === 0 || !companyName) return
     setIsProcessing(true)
     setErrorMessage(null)
-
-    const formData = new FormData()
-    formData.append('companyName', companyName)
+    setStage('uploading')
+    
+    // Initialize progress for each file
+    const initialProgress = {}
     files.forEach(file => {
-      formData.append('files', file)
+      initialProgress[file.name] = 0
+    })
+    setFileUploadProgress(initialProgress)
+
+    // Simulate upload progress for each file
+    files.forEach(file => {
+      let progress = 0
+      const interval = setInterval(() => {
+        progress += 5
+        if (progress <= 100) {
+          setFileUploadProgress(prev => ({
+            ...prev,
+            [file.name]: progress
+          }))
+        } else {
+          clearInterval(interval)
+        }
+      }, 200)
     })
 
+    // Start processing simulation after "upload"
+    setTimeout(() => {
+      simulateProcessingProgress()
+    }, files.length * 4000 + 1000)
+
     try {
+      const formData = new FormData()
+      formData.append('companyName', companyName)
+      files.forEach(file => {
+        formData.append('files', file)
+      })
+
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -118,30 +180,18 @@ export function ComplianceAgents() {
 
       const result = await response.json()
       
+      setProcessingProgress(100)
+      setStage('completed')
+      
       // Process consolidated response with source attribution
       const reportContent = result.response.response
       const sourceInfo = buildSourceAttribution(result.response.sources)
       const fullReport = `${reportContent}\n\n## Source Documents\n${sourceInfo}`
       
       setReportData(fullReport)
-      
-      // Update progress states
-      const completedState: UploadProgress = {}
-      const completedStatus: UploadStatus = {}
-      files.forEach(file => {
-        completedState[file.name] = 100
-        completedStatus[file.name] = 'completed'
-      })
-      setUploadProgress(completedState)
-      setUploadStatus(completedStatus)
     } catch (error) {
       console.error('Error:', error)
       setErrorMessage("There was an error uploading your files. Please try again.")
-      const failedStatus = {}
-      files.forEach(file => {
-        failedStatus[file.name] = 'failed'
-      })
-      setUploadStatus(failedStatus)
     } finally {
       setIsProcessing(false)
     }
@@ -250,26 +300,33 @@ export function ComplianceAgents() {
       {isProcessing && (
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Upload Progress</h3>
-            {files.map((file) => (
-              <div key={file.name} className="mb-4">
-                <div className="flex justify-between mb-2">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    {file.name}
-                  </span>
-                  <Badge
-                    variant={uploadStatus[file.name] === 'failed' ? 'destructive' : 'secondary'}
-                  >
-                    {uploadStatus[file.name]}
-                  </Badge>
-                </div>
-                <Progress value={uploadProgress[file.name]} className="w-full" />
-              </div>
-            ))}
-            <p className="text-sm text-gray-600 mt-4">
-              Analyzing company documents for cyber insurance compliance... This may take a few minutes.
-            </p>
+            {stage === 'uploading' && (
+              <>
+                <h3 className="text-lg font-semibold mb-4">Uploading Files</h3>
+                {files.map((file) => (
+                  <div key={file.name} className="mb-4">
+                    <div className="flex justify-between mb-2">
+                      <span className="flex items-center">
+                        <FileText className="mr-2 h-4 w-4" />
+                        {file.name}
+                      </span>
+                      <span>{fileUploadProgress[file.name]}%</span>
+                    </div>
+                    <Progress value={fileUploadProgress[file.name]} className="w-full" />
+                  </div>
+                ))}
+              </>
+            )}
+            
+            {stage === 'processing' && (
+              <>
+                <h3 className="text-lg font-semibold mb-4">Processing Documents</h3>
+                <Progress value={processingProgress} className="w-full mb-2" />
+                <p className="text-sm text-gray-600">
+                  Analyzing company documents for cyber insurance compliance... {processingProgress}%
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
