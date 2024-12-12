@@ -1,5 +1,6 @@
 'use client'
 
+
 import React, { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import ReactMarkdown from 'react-markdown'
-import { SyntaxHighlighter } from 'react-syntax-highlighter'
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { 
   AlertTriangle, 
   Upload, 
@@ -20,7 +22,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 
-const API_ENDPOINT = "https://dev.api.brain.whataidea.com/api/analysis/cyber-compliance"
+const API_ENDPOINT = "/api/cyber-analysis"
 
 interface UploadProgress {
   [filename: string]: number
