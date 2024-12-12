@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.markdown-content {
+  @apply text-sm leading-relaxed;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  @apply font-bold mt-4 mb-2;
+}
+
+.markdown-content h1 {
+  @apply text-2xl;
+}
+
+.markdown-content h2 {
+  @apply text-xl;
+}
+
+.markdown-content h3 {
+  @apply text-lg;
+}
+
+.markdown-content p {
+  @apply mb-4;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply mb-4 ml-6;
+}
+
+.markdown-content li {
+  @apply mb-2;
+}
+
+.markdown-content code {
+  @apply bg-gray-100 rounded px-1 py-0.5;
+}
+
+.markdown-content pre {
+  @apply bg-gray-100 rounded p-4 mb-4 overflow-x-auto;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic my-4;
+}
+
+.markdown-content table {
+  @apply w-full mb-4 border-collapse;
+}
+
+.markdown-content th,
+.markdown-content td {
+  @apply border border-gray-300 px-2 py-1;
+}
+
+.markdown-content th {
+  @apply bg-gray-100 font-semibold;
+}
+
+.markdown-content a {
+  @apply text-blue-600 hover:underline;
+}
+
+.markdown-content img {
+  @apply max-w-full h-auto;
+}
+
+/* Add hover effects for interactive elements */
+.markdown-content .interactive:hover {
+  @apply bg-gray-100 transition-colors duration-200;
+}
+
+/* Add smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add loading skeleton styles */
+.skeleton {
+  @apply bg-gray-200 animate-pulse rounded;
+}
+
+/* Add print styles */
+@media print {
+  .no-print {
+    display: none;
+  }
+  .markdown-content {
+    @apply text-black;
+  }
+}
+
+/* Add styles for risk level indicators */
+.risk-high {
+  @apply bg-red-100 text-red-800 px-2 py-1 rounded font-semibold;
+}
+
+.risk-medium {
+  @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-semibold;
+}
+
+.risk-low {
+  @apply bg-green-100 text-green-800 px-2 py-1 rounded font-semibold;
+}
+
+/* Add styles for compliance status badges */
+.compliance-compliant {
+  @apply bg-green-100 text-green-800 px-2 py-1 rounded;
+}
+
+.compliance-partial {
+  @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded;
+}
+
+.compliance-non-compliant {
+  @apply bg-red-100 text-red-800 px-2 py-1 rounded;
+}
+
+/* Add styles for warning/info boxes */
+.warning-box {
+  @apply bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4;
+}
+
+.info-box {
+  @apply bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4;
+}
+
+/* Add styles for success/error states */
+.success-state {
+  @apply bg-green-100 text-green-800 px-4 py-2 rounded mb-4;
+}
+
+.error-state {
+  @apply bg-red-100 text-red-800 px-4 py-2 rounded mb-4;
+}
+
+/* Specific styles for cyber insurance compliance report */
+.policy-gap {
+  @apply bg-orange-100 text-orange-800 px-2 py-1 rounded font-semibold;
+}
+
+.recommendation {
+  @apply bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold;
+}
+
+.action-item {
+  @apply bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold;
+}
+

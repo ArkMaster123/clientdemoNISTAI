@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     // Pass through the JSON response
     const data = await response.json()
     return NextResponse.json(data)
-    })
   } catch (error) {
     console.error('Proxy error:', error)
     return new NextResponse(JSON.stringify({ error: 'Failed to process request' }), {

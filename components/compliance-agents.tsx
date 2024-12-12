@@ -93,76 +93,41 @@ export function ComplianceAgents() {
   }
 
   const analyzeFiles = async () => {
-    if (files.length === 0) return
+    if (files.length === 0 || !companyName) return
     setIsProcessing(true)
     setErrorMessage(null)
-    
-    // Initialize progress tracking
-    const initialProgress = {}
-    const initialStatus = {}
-    files.forEach(file => {
-      initialProgress[file.name] = 0
-      initialStatus[file.name] = 'pending'
-    })
-    setUploadProgress(initialProgress)
-    setUploadStatus(initialStatus)
 
     const formData = new FormData()
+    formData.append('companyName', companyName)
     files.forEach(file => {
       formData.append('files', file)
     })
 
     try {
-      const xhr = new XMLHttpRequest()
-      xhr.open('POST', API_ENDPOINT)
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json'
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      // Extract just the markdown part
+      setReportData(data.response.response)
       
-      // Set required headers
-      xhr.setRequestHeader('accept', 'application/json')
-      
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = (event.loaded / event.total) * 100
-          files.forEach(file => {
-            updateUploadProgress(file.name, progress)
-            updateUploadStatus(file.name, 'uploading')
-          })
-        }
-      }
-
-      xhr.onerror = () => {
-        files.forEach(file => {
-          updateUploadStatus(file.name, 'failed')
-        })
-        setErrorMessage("Network error occurred while uploading files. Please try again.")
-      }
-
-      xhr.onload = async () => {
-        if (xhr.status === 200) {
-          try {
-            const response = JSON.parse(xhr.responseText)
-            setReportData(response)
-            files.forEach(file => {
-              updateUploadProgress(file.name, 100)
-              updateUploadStatus(file.name, 'completed')
-            })
-          } catch (error) {
-            setErrorMessage("Invalid response format from server")
-            files.forEach(file => updateUploadStatus(file.name, 'failed'))
-          }
-        } else {
-          let errorMessage = "Server error occurred"
-          try {
-            const errorData = JSON.parse(xhr.responseText)
-            errorMessage = errorData.message || errorMessage
-          } catch (e) {
-            // Use default error message if response isn't valid JSON
-          }
-          setErrorMessage(errorMessage)
-          files.forEach(file => updateUploadStatus(file.name, 'failed'))
-        }
-      }
-
-      xhr.send(formData)
+      const completedState = {}
+      const completedStatus = {}
+      files.forEach(file => {
+        completedState[file.name] = 100
+        completedStatus[file.name] = 'completed'
+      })
+      setUploadProgress(completedState)
+      setUploadStatus(completedStatus)
     } catch (error) {
       console.error('Error:', error)
       setErrorMessage("There was an error uploading your files. Please try again.")
