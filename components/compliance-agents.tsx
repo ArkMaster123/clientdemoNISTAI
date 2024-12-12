@@ -19,7 +19,8 @@ import {
   Shield,
   CheckCircle,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Brain
 } from 'lucide-react'
 
 const API_ENDPOINT = "/api/cyber-analysis"
@@ -225,8 +226,8 @@ export function ComplianceAgents() {
         <Card className="bg-[#080415] text-white mb-6 overflow-hidden">
           <CardContent className="p-8 relative">
             <div className="relative z-10">
-              <h2 className="text-4xl font-bold mb-2">Compliance is Complex</h2>
-              <p className="text-xl opacity-80">Let's simplify the process...</p>
+              <h2 className="text-4xl font-bold mb-2">Compliance in Seconds</h2>
+              <p className="text-xl opacity-80">Let's clarify the state...</p>
             </div>
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
