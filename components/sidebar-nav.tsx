@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Home, Shield, Brain, User, ChevronDown, FileCheck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface MenuItemProps {
   icon: React.ReactNode;
@@ -104,6 +104,7 @@ function SubMenuItem({ icon, label, isActive = false, isCollapsed = false }: Sub
 
 export function Sidebar() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const pathname = usePathname();
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
 
@@ -130,7 +131,7 @@ export function Sidebar() {
         <MenuItem
           icon={<Home size={20} />}
           label="Dashboard"
-          isActive
+          isActive={pathname === '/dashboard'}
           isCollapsed={isSidebarCollapsed}
         />
         <MenuItem
@@ -142,18 +143,20 @@ export function Sidebar() {
           <SubMenuItem
             icon={<Brain size={20} />}
             label="NISTAI"
-            isActive
+            isActive={pathname === '/nistai'}
             isCollapsed={isSidebarCollapsed}
           />
           <SubMenuItem
             icon={<FileCheck size={20} />}
             label="Compliance Agents"
+            isActive={pathname === '/compliance-agents'}
             isCollapsed={isSidebarCollapsed}
           />
         </MenuItem>
         <MenuItem
           icon={<User size={20} />}
           label="Support"
+          isActive={pathname === '/support'}
           isCollapsed={isSidebarCollapsed}
         />
       </nav>
