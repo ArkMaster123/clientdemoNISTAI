@@ -74,7 +74,12 @@ export function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
           blockquote: ({node, ...props}) => (
             <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4" {...props} />
           ),
-          code({node, inline, className, children, ...props}) {
+          code({node, inline, className, children, ...props}: {
+            node?: any;
+            inline?: boolean;
+            className?: string;
+            children: React.ReactNode;
+          }) {
             const match = /language-(\w+)/.exec(className || '')
             return !inline && match ? (
               <SyntaxHighlighter

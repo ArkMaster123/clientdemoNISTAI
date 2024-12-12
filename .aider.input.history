@@ -1516,3 +1516,69 @@
 
 # 2024-12-12 21:37:12.798927
 +i LOVE it!! well done!! now lets move onto the next thing, once there is an ouptut there should be a clear button to do another run (which will refresh and let user do new one witih clean reset of page) 
+
+# 2024-12-12 21:57:16.132463
++/add/workspaces/clientdemoNISTAI/components/ReportDisplay.tsx
+
+# 2024-12-12 21:57:21.290530
++/add /workspaces/clientdemoNISTAI/components/ReportDisplay.tsx
+
+# 2024-12-12 21:57:35.406877
++info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
++   Linting and checking validity of types  .Failed to compile.
++
++./components/ReportDisplay.tsx:77:23
++Type error: Property 'inline' does not exist on type 'ClassAttributes<HTMLElement> & HTMLAttributes<HTMLElement> & ExtraProps'.
++
++  75 |             <blockquote className="border-l-4 border-gray-300 pl-4 italic my-4" {...props} />
++  76 |           ),
++> 77 |           code({node, inline, className, children, ...props}) {
++     |                       ^
++  78 |             const match = /language-(\w+)/.exec(className || '')
++  79 |             return !inline && match ? (
++  80 |               <SyntaxHighlighter
++@ArkMaster123 ➜ /workspaces/clientdemoNISTAI (loopli) $ 
+
+# 2024-12-12 21:57:37.409439
++n
+
+# 2024-12-12 21:58:24.230604
++  Linting and checking validity of types  ...Failed to compile.
++
++./components/compliance-agents.tsx:76:5
++Type error: Cannot find name 'setUploadProgress'. Did you mean 'setFileUploadProgress'?
++
++  74 |
++  75 |   const updateUploadProgress = (fileName: string, progress: number) => {
++> 76 |     setUploadProgress(prev => ({...prev, [fileName]: progress}))
++     |     ^
++  77 |   }
++  78 |
++  79 |   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+# 2024-12-12 21:59:09.135770
++./components/compliance-agents.tsx:543:23
++Type error: Property 'inline' does not exist on type 'ClassAttributes<HTMLElement> & HTMLAttributes<HTMLElement> & ExtraProps'.
++
++  541 |             </blockquote>
++  542 |           ),
++> 543 |           code({node, inline, className, children, ...props}) {
++      |                       ^
++  544 |             const match = /language-(\w+)/.exec(className || '')
++  545 |             return !inline && match ? (
++  546 |               <SyntaxHighlighter
++@ArkMaster123 ➜ /workspaces/clientdemoNISTAI (loopli) $ 
+
+# 2024-12-12 22:00:09.889860
++
++./components/ui/dropdown-menu.tsx:4:40
++Type error: Cannot find module '@radix-ui/react-dropdown-menu' or its corresponding type declarations.
++
++  2 |
++  3 | import * as React from "react"
++> 4 | import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
++    |                                        ^
++  5 | import { Check, ChevronRight, Circle } from "lucide-react"
++  6 |
++  7 | import { cn } from "@/lib/utils"
++@ArkMaster123 ➜ /workspaces/clientdemoNISTAI (loopli) $ 
