@@ -220,10 +220,41 @@ export function ComplianceAgents() {
   return (
     <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 overflow-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Cyber Insurance Compliance Assessment</h1>
-      
-      <Card className="mb-6">
+      <div className="flex-1 overflow-auto p-8">
+        {/* Welcome Card with Animation */}
+        <Card className="bg-[#080415] text-white mb-6 overflow-hidden">
+          <CardContent className="p-8 relative">
+            <div className="relative z-10">
+              <h2 className="text-4xl font-bold mb-2">Compliance is Complex</h2>
+              <p className="text-xl opacity-80">Let's simplify the process...</p>
+            </div>
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
+              <div className="absolute inset-0 bg-[url('/pattern.svg')] bg-repeat opacity-20" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Process Steps */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <ProcessStep 
+            icon={<Upload size={24} />} 
+            title="Document Upload" 
+            description="Upload your compliance documentation" 
+          />
+          <ProcessStep 
+            icon={<Brain size={24} />} 
+            title="AI Assessment" 
+            description="Let our AI assess your compliance status" 
+          />
+          <ProcessStep 
+            icon={<FileText size={24} />} 
+            title="Report Ready" 
+            description="Review your detailed compliance report" 
+          />
+        </div>
+
+        <Card className="mb-6">
         <CardHeader>
           <CardTitle>Upload Company Documents for Analysis</CardTitle>
         </CardHeader>
@@ -426,6 +457,16 @@ export function ComplianceAgents() {
 interface ReportDisplayProps {
   reportData: string
   companyName: string
+}
+
+function ProcessStep({ icon, title, description }) {
+  return (
+    <div className="flex flex-col items-center text-center">
+      <div className="mb-4 text-white bg-indigo-600 p-4 rounded-full">{icon}</div>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-gray-600 text-sm">{description}</p>
+    </div>
+  )
 }
 
 function buildSourceAttribution(sources: any[]) {
