@@ -36,8 +36,8 @@ export function ComplianceAgents() {
   const [reportData, setReportData] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
-  const [uploadStatus, setUploadStatus] = useState<Record<string, 'pending' | 'uploading' | 'completed' | 'failed'>>({})
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({})
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>({})
   const [isProcessing, setIsProcessing] = useState(false)
 
   const validateFile = (file: File) => {
@@ -110,28 +110,50 @@ export function ComplianceAgents() {
     })
 
     try {
-      const response = await fetch(`${API_ENDPOINT}?credentials=${process.env.NEXT_PUBLIC_API_KEY}`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(`API error: ${errorData.message}`)
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', `${API_ENDPOINT}?credentials=${process.env.NEXT_PUBLIC_API_KEY}`)
+      
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = (event.loaded / event.total) * 100
+          files.forEach(file => {
+            updateUploadProgress(file.name, progress)
+            updateUploadStatus(file.name, 'uploading')
+          })
+        }
       }
 
-      const result = await response.text()
-      setReportData(result)
-      
-      // Update progress and status for success
-      const completedState = {}
-      const completedStatus = {}
-      files.forEach(file => {
-        completedState[file.name] = 100
-        completedStatus[file.name] = 'completed'
-      })
-      setUploadProgress(completedState)
-      setUploadStatus(completedStatus)
+      xhr.onerror = () => {
+        files.forEach(file => {
+          updateUploadStatus(file.name, 'failed')
+        })
+        toast({
+          title: "Upload failed",
+          description: "There was an error uploading your files. Please try again.",
+          variant: "destructive"
+        })
+      }
+
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          const result = xhr.responseText
+          setReportData(result)
+          files.forEach(file => {
+            updateUploadProgress(file.name, 100)
+            updateUploadStatus(file.name, 'completed')
+          })
+          toast({
+            title: "Analysis complete",
+            description: "Your compliance report is ready.",
+            variant: "default"
+          })
+        } else {
+          const errorData = JSON.parse(xhr.responseText)
+          throw new Error(`API error: ${errorData.message}`)
+        }
+      }
+
+      xhr.send(formData)
     } catch (error) {
       console.error('Error:', error)
       const failedStatus = {}
@@ -229,16 +251,31 @@ export function ComplianceAgents() {
       {isProcessing && (
         <Card className="mb-6">
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Analysis Progress</h3>
-            <Progress value={uploadProgress} className="w-full mb-2" />
-            <p className="text-sm text-gray-600">
+            <h3 className="text-lg font-semibold mb-4">Upload Progress</h3>
+            {files.map((file) => (
+              <div key={file.name} className="mb-4">
+                <div className="flex justify-between mb-2">
+                  <span className="flex items-center">
+                    <FileText className="mr-2 h-4 w-4" />
+                    {file.name}
+                  </span>
+                  <Badge
+                    variant={uploadStatus[file.name] === 'failed' ? 'destructive' : 'secondary'}
+                  >
+                    {uploadStatus[file.name]}
+                  </Badge>
+                </div>
+                <Progress value={uploadProgress[file.name]} className="w-full" />
+              </div>
+            ))}
+            <p className="text-sm text-gray-600 mt-4">
               Analyzing company documents for cyber insurance compliance... This may take a few minutes.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {reportData && (
+      {reportData && !isProcessing && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Cyber Insurance Compliance Report</CardTitle>
@@ -392,21 +429,6 @@ function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
                 <Progress value={uploadProgress[file.name]} className="w-full" />
               </div>
             ))}
-          </CardContent>
-        </Card>
-      )}
-      {reportData && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Cyber Insurance Compliance Report</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReportDisplay reportData={reportData} companyName={companyName} />
-            <div className="mt-6 space-x-4">
-              <Button onClick={() => downloadReport('pdf')}>Download PDF</Button>
-              <Button onClick={() => downloadReport('docx')}>Download Word</Button>
-              <Button onClick={() => downloadReport('md')}>Download Markdown</Button>
-            </div>
           </CardContent>
         </Card>
       )}
