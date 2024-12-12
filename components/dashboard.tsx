@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Sidebar } from "@/components/sidebar-nav"
 import { Brain, ArrowRight, ClipboardList, Shield } from 'lucide-react'
+import { cn } from "@/lib/utils"
 
 
 

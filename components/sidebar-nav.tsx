@@ -149,12 +149,14 @@ export function Sidebar() {
           <SubMenuItem
             icon={<FileCheck size={20} />}
             label="Compliance Agents"
+            isActive={pathname === '/compliance-agents'}
             isCollapsed={isSidebarCollapsed}
           />
         </MenuItem>
         <MenuItem
           icon={<User size={20} />}
           label="Support"
+          isActive={pathname === '/support'}
           isCollapsed={isSidebarCollapsed}
         />
       </nav>
