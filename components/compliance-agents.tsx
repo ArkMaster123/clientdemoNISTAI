@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge"
 import ReactMarkdown from 'react-markdown'
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
-import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { 
   AlertTriangle, 
   Upload, 
