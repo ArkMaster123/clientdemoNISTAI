@@ -1,7 +1,7 @@
 'use client'
 
-
 import React, { useState, useRef } from 'react'
+import { Sidebar } from "@/components/sidebar-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -218,7 +218,9 @@ export function ComplianceAgents() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 overflow-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Cyber Insurance Compliance Assessment</h1>
       
       <Card className="mb-6">
@@ -416,6 +418,7 @@ export function ComplianceAgents() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   )
 }
