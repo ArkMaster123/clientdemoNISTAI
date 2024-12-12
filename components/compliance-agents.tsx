@@ -112,7 +112,7 @@ export function ComplianceAgents() {
 
     try {
       const xhr = new XMLHttpRequest()
-      xhr.open('POST', `${API_ENDPOINT}?credentials=${process.env.NEXT_PUBLIC_API_KEY}`)
+      xhr.open('POST', API_ENDPOINT)
       
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
