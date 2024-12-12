@@ -5,9 +5,30 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
-import { AlertTriangle, Upload, FileText, File, Trash2, Shield } from 'lucide-react'
+import { Badge } from "@/components/ui/badge"
+import ReactMarkdown from 'react-markdown'
+import { SyntaxHighlighter } from 'react-syntax-highlighter'
+import { 
+  AlertTriangle, 
+  Upload, 
+  FileText, 
+  File, 
+  Trash2, 
+  Shield,
+  CheckCircle,
+  Activity,
+  ArrowRight
+} from 'lucide-react'
 
 const API_ENDPOINT = "https://dev.api.brain.whataidea.com/api/analysis/cyber-compliance"
+
+interface UploadProgress {
+  [filename: string]: number
+}
+
+interface UploadStatus {
+  [filename: string]: 'pending' | 'uploading' | 'completed' | 'failed'
+}
 
 export function ComplianceAgents() {
   const [files, setFiles] = useState<File[]>([])
@@ -40,26 +61,6 @@ export function ComplianceAgents() {
     setUploadStatus(prev => ({...prev, [fileName]: status}))
   }
 
-  const downloadReport = async (format: 'pdf' | 'docx' | 'md') => {
-    const response = await fetch(`${API_ENDPOINT}/download?format=${format}`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to download report')
-    }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(new Blob([blob]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `compliance_report.${format}`)
-    document.body.appendChild(link)
-    link.click()
-    link.parentNode.removeChild(link)
-  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -90,9 +91,17 @@ export function ComplianceAgents() {
 
   const analyzeFiles = async () => {
     if (files.length === 0 || !companyName) return
-
     setIsProcessing(true)
-    setUploadProgress(0)
+    
+    // Initialize progress tracking
+    const initialProgress = {}
+    const initialStatus = {}
+    files.forEach(file => {
+      initialProgress[file.name] = 0
+      initialStatus[file.name] = 'pending'
+    })
+    setUploadProgress(initialProgress)
+    setUploadStatus(initialStatus)
 
     const formData = new FormData()
     formData.append('companyName', companyName)
@@ -101,12 +110,9 @@ export function ComplianceAgents() {
     })
 
     try {
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch(`${API_ENDPOINT}?credentials=${process.env.NEXT_PUBLIC_API_KEY}`, {
         method: 'POST',
         body: formData,
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
       })
 
       if (!response.ok) {
@@ -116,12 +122,25 @@ export function ComplianceAgents() {
 
       const result = await response.text()
       setReportData(result)
+      
+      // Update progress and status for success
+      const completedState = {}
+      const completedStatus = {}
+      files.forEach(file => {
+        completedState[file.name] = 100
+        completedStatus[file.name] = 'completed'
+      })
+      setUploadProgress(completedState)
+      setUploadStatus(completedStatus)
     } catch (error) {
       console.error('Error:', error)
-      // Handle error (e.g., show error message to user)
+      const failedStatus = {}
+      files.forEach(file => {
+        failedStatus[file.name] = 'failed'
+      })
+      setUploadStatus(failedStatus)
     } finally {
       setIsProcessing(false)
-      setUploadProgress(100)
     }
   }
 
