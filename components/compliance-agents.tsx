@@ -73,7 +73,7 @@ export function ComplianceAgents() {
   }
 
   const updateUploadProgress = (fileName: string, progress: number) => {
-    setUploadProgress(prev => ({...prev, [fileName]: progress}))
+    setFileUploadProgress(prev => ({...prev, [fileName]: progress}))
   }
 
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
