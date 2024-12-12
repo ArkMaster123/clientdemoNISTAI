@@ -119,9 +119,9 @@ export function Sidebar() {
       <div className="h-16 flex items-center px-4 border-b border-[#E5E7EB]">
         <div className={isSidebarCollapsed ? "w-8" : "w-32"}>
           <img
-            src="https://cdn.prod.website-files.com/6459501a1911cd7b5655f077/646a2f2db39363e2e38e31f4_logo-white-goldi.svg"
-            alt="Goldilock"
-            className={`h-8 w-full object-contain invert`}
+            src="https://getloopli.com/wp-content/images/loopli-123-logo.png"
+            alt="Loopli"
+            className={`h-8 w-full object-contain`}
           />
         </div>
       </div>
