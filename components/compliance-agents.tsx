@@ -169,16 +169,6 @@ export function ComplianceAgents() {
         { duration: 10000, start: 60, end: 85 }, // Final analysis
         { duration: 5000, start: 85, end: 95 }   // Report generation
       ]);
-
-    try {
-      const formData = new FormData()
-      formData.append('companyName', companyName)
-      files.forEach(file => {
-        formData.append('files', file)
-      })
-
-      // Start processing animation
-      updateProcessingProgress(30, 1000) // Quick jump to 30%
       
       const response = await fetch(API_ENDPOINT, {
         method: 'POST',
@@ -186,32 +176,30 @@ export function ComplianceAgents() {
           'accept': 'application/json'
         },
         body: formData
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
+        throw new Error(`API error: ${response.status}`);
       }
 
-      // Quickly complete the progress bar
-      updateProcessingProgress(100, 500)
-      
-      const result = await response.json()
+      const result = await response.json();
       
       // Small delay before showing results for smooth transition
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setStage('completed')
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setStage('completed');
       
       // Process consolidated response with source attribution
-      const reportContent = result.response.response
-      const sourceInfo = buildSourceAttribution(result.response.sources)
-      const fullReport = `${reportContent}\n\n## Source Documents\n${sourceInfo}`
+      const reportContent = result.response.response;
+      const sourceInfo = buildSourceAttribution(result.response.sources);
+      const fullReport = `${reportContent}\n\n## Source Documents\n${sourceInfo}`;
       
-      setReportData(fullReport)
+      setReportData(fullReport);
     } catch (error) {
-      console.error('Error:', error)
-      setErrorMessage("There was an error uploading your files. Please try again.")
+      console.error('Error:', error);
+      setErrorMessage("There was an error uploading your files. Please try again.");
+      setStage('error');
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
   }
 
