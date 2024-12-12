@@ -45,6 +45,20 @@ export function ComplianceAgents() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const resetForm = () => {
+    setFiles([])
+    setCompanyName('')
+    setReportData(null)
+    setFileUploadProgress({})
+    setProcessingProgress(0)
+    setStage('ready')
+    setIsProcessing(false)
+    setErrorMessage(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const validateFile = (file: File) => {
     const allowedTypes = ['application/pdf', 'application/json']
     const maxSize = 10 * 1024 * 1024 // 10MB
@@ -370,14 +384,25 @@ export function ComplianceAgents() {
 
       {/* Report Display */}
       {reportData && !isProcessing && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Cyber Insurance Compliance Report</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReportDisplay reportData={reportData} companyName={companyName} />
-          </CardContent>
-        </Card>
+        <>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Cyber Insurance Compliance Report</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ReportDisplay reportData={reportData} companyName={companyName} />
+            </CardContent>
+          </Card>
+          <div className="flex justify-center">
+            <Button 
+              size="lg"
+              onClick={resetForm}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Start New Analysis
+            </Button>
+          </div>
+        </>
       )}
 
       {/* Empty State */}
