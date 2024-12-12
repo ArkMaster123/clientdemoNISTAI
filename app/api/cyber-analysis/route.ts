@@ -14,15 +14,9 @@ export async function POST(request: Request) {
       body: formData
     })
 
-    // Get the response as text (since it's markdown)
-    const data = await response.text()
-    
-    // Return the response
-    return new NextResponse(data, {
-      status: response.status,
-      headers: {
-        'Content-Type': 'text/markdown'
-      }
+    // Pass through the JSON response
+    const data = await response.json()
+    return NextResponse.json(data)
     })
   } catch (error) {
     console.error('Proxy error:', error)
