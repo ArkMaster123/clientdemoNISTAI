@@ -40,7 +40,8 @@ export function ComplianceAgents() {
 
   const [fileUploadProgress, setFileUploadProgress] = useState<Record<string, number>>({})
   const [processingProgress, setProcessingProgress] = useState<number>(0)
-  const [stage, setStage] = useState<'uploading' | 'processing' | 'completed' | null>(null)
+  type ProgressStage = 'ready' | 'uploading' | 'validating' | 'processing' | 'completed' | 'error';
+  const [stage, setStage] = useState<ProgressStage>('ready')
   const [isProcessing, setIsProcessing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -61,25 +62,41 @@ export function ComplianceAgents() {
     setUploadProgress(prev => ({...prev, [fileName]: progress}))
   }
 
-  const updateProcessingProgress = (targetProgress: number, duration: number) => {
-    const startProgress = processingProgress
-    const startTime = Date.now()
-    
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min(
-        startProgress + ((targetProgress - startProgress) * elapsed) / duration,
-        targetProgress
-      )
-      
-      setProcessingProgress(progress)
-      
-      if (progress >= targetProgress) {
-        clearInterval(interval)
-      }
-    }, 50)
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-    return interval
+  const simulateProgress = async (
+    stage: ProgressStage,
+    duration: number,
+    startPercent: number,
+    endPercent: number
+  ) => {
+    const steps = (endPercent - startPercent);
+    const stepDuration = duration / steps;
+    
+    for (let i = startPercent; i <= endPercent; i++) {
+      setProcessingProgress(i);
+      await delay(stepDuration);
+    }
+  }
+
+  const simulateFileUpload = async (file: File) => {
+    const duration = 3000; // 3 seconds per file
+    const steps = 100;
+    const stepDuration = duration / steps;
+    
+    for (let progress = 0; progress <= 100; progress++) {
+      setFileUploadProgress(prev => ({
+        ...prev,
+        [file.name]: progress
+      }));
+      await delay(stepDuration);
+    }
+  }
+
+  const simulateProcessingStages = async (stages: Array<{duration: number, start: number, end: number}>) => {
+    for (const stage of stages) {
+      await simulateProgress('processing', stage.duration, stage.start, stage.end);
+    }
   }
 
 
@@ -111,40 +128,47 @@ export function ComplianceAgents() {
   }
 
   const analyzeFiles = async () => {
-    if (files.length === 0 || !companyName) return
-    setIsProcessing(true)
-    setErrorMessage(null)
-    setStage('uploading')
-    setProcessingProgress(0)
+    if (files.length === 0 || !companyName) return;
     
-    // Initialize progress for each file
-    const initialProgress = {}
-    files.forEach(file => {
-      initialProgress[file.name] = 0
-    })
-    setFileUploadProgress(initialProgress)
-
-    const formData = new FormData()
-    formData.append('companyName', companyName)
-    
-    // Upload files with real progress tracking
-    for (const file of files) {
-      const xhr = new XMLHttpRequest()
+    try {
+      setIsProcessing(true);
+      setErrorMessage(null);
+      setProcessingProgress(0);
       
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const progress = (event.loaded / event.total) * 100
-          setFileUploadProgress(prev => ({
-            ...prev,
-            [file.name]: progress
-          }))
-        }
-      })
+      // Initial upload state
+      setStage('uploading');
       
-      formData.append('files', file)
-    }
+      // Initialize progress for each file
+      const initialProgress = {};
+      files.forEach(file => {
+        initialProgress[file.name] = 0;
+      });
+      setFileUploadProgress(initialProgress);
 
-    setStage('processing')
+      // File validation phase
+      setStage('validating');
+      await simulateProgress('validating', 2000, 0, 10);
+
+      // Upload phase
+      setStage('uploading');
+      for (const file of files) {
+        await simulateFileUpload(file);
+      }
+
+      const formData = new FormData();
+      formData.append('companyName', companyName);
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      // Processing phase
+      setStage('processing');
+      await simulateProcessingStages([
+        { duration: 10000, start: 10, end: 30 }, // Initial analysis
+        { duration: 15000, start: 30, end: 60 }, // Deep processing
+        { duration: 10000, start: 60, end: 85 }, // Final analysis
+        { duration: 5000, start: 85, end: 95 }   // Report generation
+      ]);
 
     try {
       const formData = new FormData()
@@ -291,39 +315,67 @@ export function ComplianceAgents() {
         </Card>
       )}
 
-      {isProcessing && (
+      {isProcessing && stage !== 'ready' && (
         <Card className="mb-6">
           <CardContent className="p-6">
-            {stage === 'uploading' && (
-              <>
-                <h3 className="text-lg font-semibold mb-4">Uploading Files</h3>
-                {files.map((file) => (
-                  <div key={file.name} className="mb-4">
-                    <div className="flex justify-between mb-2">
-                      <span className="flex items-center">
-                        <FileText className="mr-2 h-4 w-4" />
-                        {file.name}
-                      </span>
-                      <span>{fileUploadProgress[file.name]}%</span>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                {stage !== 'completed' && (
+                  <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                <h3 className="text-lg font-semibold">
+                  {stage === 'uploading' && 'Uploading Files'}
+                  {stage === 'validating' && 'Validating Documents'}
+                  {stage === 'processing' && 'Processing Documents'}
+                  {stage === 'completed' && 'Analysis Complete'}
+                </h3>
+              </div>
+
+              {stage !== 'completed' && (
+                <Progress 
+                  value={processingProgress} 
+                  className="w-full transition-all duration-300 ease-in-out" 
+                />
+              )}
+
+              <p className="text-sm text-gray-600 transition-opacity duration-200">
+                {stage === 'uploading' && 'Uploading your documents...'}
+                {stage === 'validating' && 'Validating document format and content...'}
+                {stage === 'processing' && (
+                  <>
+                    {processingProgress < 30 && "Initializing analysis..."}
+                    {processingProgress >= 30 && processingProgress < 60 && "Analyzing compliance requirements..."}
+                    {processingProgress >= 60 && processingProgress < 85 && "Evaluating security controls..."}
+                    {processingProgress >= 85 && "Generating final report..."}
+                    {" "}{Math.round(processingProgress)}%
+                  </>
+                )}
+                {stage === 'completed' && 'Analysis complete!'}
+              </p>
+
+              {stage === 'uploading' && (
+                <div className="space-y-2">
+                  {files.map((file) => (
+                    <div key={file.name} className="mb-4">
+                      <div className="flex justify-between mb-2">
+                        <span className="flex items-center">
+                          <FileText className="mr-2 h-4 w-4" />
+                          {file.name}
+                        </span>
+                        <span>{Math.round(fileUploadProgress[file.name])}%</span>
+                      </div>
+                      <Progress 
+                        value={fileUploadProgress[file.name]} 
+                        className="w-full transition-all duration-300" 
+                      />
                     </div>
-                    <Progress value={fileUploadProgress[file.name]} className="w-full" />
-                  </div>
-                ))}
-              </>
-            )}
-            
-            {stage === 'processing' && (
-              <>
-                <h3 className="text-lg font-semibold mb-4">Processing Documents</h3>
-                <Progress value={processingProgress} className="w-full mb-2" />
-                <p className="text-sm text-gray-600">
-                  {processingProgress < 30 && "Initializing analysis..."}
-                  {processingProgress >= 30 && processingProgress < 90 && "Analyzing company documents for compliance..."}
-                  {processingProgress >= 90 && "Finalizing assessment..."}
-                  {" "}{Math.round(processingProgress)}%
-                </p>
-              </>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
