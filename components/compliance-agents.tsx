@@ -116,12 +116,18 @@ export function ComplianceAgents() {
         throw new Error(`API error: ${response.status}`)
       }
 
-      const data = await response.json()
-      // Extract just the markdown part
-      setReportData(data.response.response)
+      const result = await response.json()
       
-      const completedState = {}
-      const completedStatus = {}
+      // Process consolidated response with source attribution
+      const reportContent = result.response.response
+      const sourceInfo = buildSourceAttribution(result.response.sources)
+      const fullReport = `${reportContent}\n\n## Source Documents\n${sourceInfo}`
+      
+      setReportData(fullReport)
+      
+      // Update progress states
+      const completedState: UploadProgress = {}
+      const completedStatus: UploadStatus = {}
       files.forEach(file => {
         completedState[file.name] = 100
         completedStatus[file.name] = 'completed'
@@ -337,6 +343,31 @@ export function ComplianceAgents() {
 interface ReportDisplayProps {
   reportData: string
   companyName: string
+}
+
+function buildSourceAttribution(sources: any[]) {
+  const usedSources = new Map<string, Set<string>>()
+  
+  sources.forEach(source => {
+    source.raw_output.source_nodes.forEach((node: any) => {
+      if (node.node.metadata?.file_name) {
+        const key = node.node.metadata.file_name
+        if (!usedSources.has(key)) {
+          usedSources.set(key, new Set())
+        }
+        if (node.node.metadata.page_label) {
+          usedSources.get(key)?.add(node.node.metadata.page_label)
+        }
+      }
+    })
+  })
+
+  return Array.from(usedSources.entries())
+    .map(([file, pages]) => {
+      const pageList = Array.from(pages).sort((a, b) => Number(a) - Number(b)).join(', ')
+      return `- ${file} (Pages: ${pageList})`
+    })
+    .join('\n')
 }
 
 function ReportDisplay({ reportData, companyName }: ReportDisplayProps) {
