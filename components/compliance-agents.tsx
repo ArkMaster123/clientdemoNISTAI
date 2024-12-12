@@ -274,34 +274,6 @@ export function ComplianceAgents() {
         </Card>
       )}
 
-      {/* Progress Tracking */}
-      {isProcessing && (
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Upload Progress</h3>
-            {files.map((file) => (
-              <div key={file.name} className="mb-4">
-                <div className="flex justify-between mb-2">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    {file.name}
-                  </span>
-                  <Badge
-                    variant={uploadStatus[file.name] === 'failed' ? 'destructive' : 'secondary'}
-                  >
-                    {uploadStatus[file.name]}
-                  </Badge>
-                </div>
-                <Progress value={uploadProgress[file.name]} className="w-full" />
-              </div>
-            ))}
-            <p className="text-sm text-gray-600 mt-4">
-              Analyzing company documents for cyber insurance compliance... This may take a few minutes.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Report Display */}
       {reportData && !isProcessing && (
         <Card className="mb-6">

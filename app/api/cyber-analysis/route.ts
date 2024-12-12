@@ -14,7 +14,10 @@ export async function POST(request: Request) {
       body: formData
     })
 
-    // Pass through the JSON response
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`)
+    }
+    
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
