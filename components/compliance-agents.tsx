@@ -274,17 +274,6 @@ export function ComplianceAgents() {
         </Card>
       )}
 
-      {reportData && !isProcessing && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Cyber Insurance Compliance Report</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ReportDisplay reportData={reportData} companyName={companyName} />
-          </CardContent>
-        </Card>
-      )}
-
       {/* Progress Tracking */}
       {isProcessing && (
         <Card className="mb-6">
