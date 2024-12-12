@@ -39,6 +39,7 @@ export function ComplianceAgents() {
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({})
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>({})
   const [isProcessing, setIsProcessing] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const validateFile = (file: File) => {
     const allowedTypes = ['application/pdf', 'application/json']
@@ -127,11 +128,7 @@ export function ComplianceAgents() {
         files.forEach(file => {
           updateUploadStatus(file.name, 'failed')
         })
-        toast({
-          title: "Upload failed",
-          description: "There was an error uploading your files. Please try again.",
-          variant: "destructive"
-        })
+        setErrorMessage("There was an error uploading your files. Please try again.")
       }
 
       xhr.onload = async () => {
@@ -142,11 +139,7 @@ export function ComplianceAgents() {
             updateUploadProgress(file.name, 100)
             updateUploadStatus(file.name, 'completed')
           })
-          toast({
-            title: "Analysis complete",
-            description: "Your compliance report is ready.",
-            variant: "default"
-          })
+          setErrorMessage(null)
         } else {
           const errorData = JSON.parse(xhr.responseText)
           throw new Error(`API error: ${errorData.message}`)
@@ -156,6 +149,7 @@ export function ComplianceAgents() {
       xhr.send(formData)
     } catch (error) {
       console.error('Error:', error)
+      setErrorMessage("There was an error uploading your files. Please try again.")
       const failedStatus = {}
       files.forEach(file => {
         failedStatus[file.name] = 'failed'
@@ -247,6 +241,24 @@ export function ComplianceAgents() {
           </Button>
         </CardContent>
       </Card>
+
+      {errorMessage && (
+        <Card className="mb-6 border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-2 text-red-600">
+              <AlertTriangle size={24} />
+              <p>{errorMessage}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              className="mt-2"
+              onClick={() => setErrorMessage(null)}
+            >
+              Dismiss
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {isProcessing && (
         <Card className="mb-6">
