@@ -1844,3 +1844,40 @@
 
 # 2024-12-12 22:50:55.249130
 +amazing job, but now same highlight rule for ALL pages in sidebar nav
+
+# 2024-12-12 23:05:43.721595
++ok absolutely amazing job!! now based on nistai forntend, can we do almost exact card with cute icons (document upload, AI Assessment (instead of analaysis) , Report Ready) , i want it same sizing, location etc. same as title look and feel where it says Compliance is Complex for our compliance agents .. 
+
+# 2024-12-12 23:06:35.048202
++⨯ components/compliance-agents.tsx (246:19) @ Brain
++ ⨯ ReferenceError: Brain is not defined
++    at ComplianceAgents (./components/compliance-agents.tsx:305:115)
++  244 |           />
++  245 |           <ProcessStep 
++> 246 |             icon={<Brain size={24} />} 
++      |                   ^
++  247 |             title="AI Assessment" 
++  248 |             description="Let our AI assess your compliance status" 
++  249 |           />
++ ○ Compiling /not-found ...
++ ✓ Compiled /favicon.ico/route in 1403ms (2819 modules)
++ ⨯ components/compliance-agents.tsx (246:19) @ Brain
++ ⨯ ReferenceError: Brain is not defined
++    at ComplianceAgents (./components/compliance-agents.tsx:305:115)
++  244 |           />
++  245 |           <ProcessStep 
++> 246 |             icon={<Brain size={24} />} 
++      |                   ^
++  247 |             title="AI Assessment" 
++  248 |             description="Let our AI assess your compliance status" 
++  249 |           />
++
+
+# 2024-12-12 23:13:26.837556
++✓ Compiled successfully
++
++Failed to compile.
++
++./components/compliance-agents.tsx
++230:52  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
++

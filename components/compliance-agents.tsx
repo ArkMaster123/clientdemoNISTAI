@@ -227,7 +227,7 @@ export function ComplianceAgents() {
           <CardContent className="p-8 relative">
             <div className="relative z-10">
               <h2 className="text-4xl font-bold mb-2">Compliance in Seconds</h2>
-              <p className="text-xl opacity-80">Let's clarify the state...</p>
+              <p className="text-xl opacity-80">Let&apos;s clarify the state...</p>
             </div>
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600" />
