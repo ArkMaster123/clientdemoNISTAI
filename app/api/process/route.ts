@@ -51,19 +51,24 @@ export async function POST(request: NextRequest) {
 
     const result = await response.text();
     
-    // Validate that the response is proper HTML
-    if (!result.includes('<div class="analysis-container">')) {
-      console.error('Invalid response format:', result);
-      throw new Error('Invalid response format from backend');
+    // Parse and validate JSON response
+    let jsonResponse;
+    try {
+      jsonResponse = JSON.parse(result);
+      if (!jsonResponse.response || !jsonResponse.response.executive_summary) {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Failed to parse response:', result);
+      throw new Error('Invalid JSON response from backend');
     }
 
     const processingTime = (Date.now() - startTime) / 1000;
     console.log(`Processing completed in ${processingTime.toFixed(2)}s`);
 
-    // Return the HTML response
-    return new NextResponse(result, {
+    // Return the JSON response
+    return NextResponse.json(jsonResponse, {
       headers: {
-        'Content-Type': 'text/html',
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
       },
     });
