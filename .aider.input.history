@@ -2943,3 +2943,99 @@
 +4. Kept consistent variable naming
 +
 +Let me know if you'd like me to explain any part in more detail!
+
+# 2024-12-13 12:41:23.835144
++the pdf URL works perfectly now please fix ONLY the pdf file uploading one that has issues: Looking at the error and both your frontend and API code, I can spot the issue. When handling file uploads, you're getting a "Method Not Allowed" error because the content type detection isn't working correctly.
++
++In your API route, this condition isn't being met:
++```typescript
++if (contentType.includes('multipart/form-data')) {
++```
++
++This is because the boundary information is missing from the content type. Let's fix this:
++
++1. In your frontend file upload handler:
++```typescript
++fetch('/api/process', {
++  method: 'POST',
++  // Remove the headers completely - let the browser set them
++  body: formData,
++})
++```
++
++2. In your API route, modify the content type check:
++```typescript
++// Before
++if (contentType.includes('multipart/form-data'))
++
++// Change to
++console.log('Content-Type:', contentType);  // Add this for debugging
++if (contentType.startsWith('multipart/form-data'))
++```
++
++The issue is happening because:
++1. The actual content type includes a boundary parameter like: `multipart/form-data; boundary=----WebKitFormBoundaryXXXX`
++2. When you add the 'Accept' header manually in the frontend, it might interfere with the browser's automatic content type setting
++3. FormData automatically sets the correct content type header with boundary
++
++For file uploads:
++1. Don't set any headers in the frontend fetch call
++2. Let the browser handle the content type
++3. Use `startsWith` instead of `includes` in the API route
++
++Would you like me to show you the complete corrected code for both the frontend and API parts?
+
+# 2024-12-13 12:47:27.046988
++do not touch the url .pdf code its perfect please fix pdf file endpoint as we still got issues there: Ah, looking at your actual curl command and output example, I see the exact format FastAPI expects. Let's modify your API route to match this format precisely:
++
++```typescript
++if (contentType.includes('multipart/form-data') || contentType.includes('form-data')) {
++  const formData = await request.formData();
++  const pdfFile = formData.get('file') as File | null;
++
++  if (!pdfFile) {
++    return NextResponse.json(
++      { error: 'No file provided in request' },
++      { status: 400 }
++    );
++  }
++
++  console.log(`Processing PDF file: ${pdfFile.name}`);
++  
++  // Remove trailing slash if present from baseUrl
++  const normalizedBaseUrl = baseUrl?.endsWith('/') 
++    ? baseUrl.slice(0, -1) 
++    : baseUrl;
++  
++  const apiUrl = `${normalizedBaseUrl}/nistai`;
++  console.log('Upload URL:', apiUrl);
++
++  // Create new FormData and append file with correct format
++  const apiFormData = new FormData();
++  const fileBlob = new Blob([await pdfFile.arrayBuffer()], { type: 'application/pdf' });
++  apiFormData.append('file', fileBlob, 'NYSE_KO_2023.pdf');
++
++  // Make request matching exact curl format
++  apiResponse = await fetch(apiUrl, {
++    method: 'POST',
++    headers: {
++      'accept': 'application/json',
++      'Content-Type': 'multipart/form-data'
++    },
++    body: apiFormData
++  });
++
++  console.log('Request sent to:', apiUrl);
++}
++```
++
++Key changes to match the curl command:
++1. Correct headers:
++   - `accept: application/json`
++   - `Content-Type: multipart/form-data`
++2. Correct form field name: `file`
++3. Proper type specification: `type=application/pdf`
++4. Exact endpoint path: `/nistai`
++5. No trailing slashes
++
++Would you like me to show you how to properly handle the response as well? The example response shows a specific format we should validate against.

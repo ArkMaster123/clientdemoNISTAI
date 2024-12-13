@@ -36,18 +36,29 @@ export async function POST(request: NextRequest) {
 
       console.log(`Processing PDF file: ${pdfFile.name}`);
       
-      // Create new FormData for the API request
-      const apiFormData = new FormData();
-      apiFormData.append('file', pdfFile);
+      // Remove trailing slash if present from baseUrl
+      const normalizedBaseUrl = baseUrl?.endsWith('/') 
+        ? baseUrl.slice(0, -1) 
+        : baseUrl;
+      
+      const apiUrl = `${normalizedBaseUrl}/nistai`;
+      console.log('Upload URL:', apiUrl);
 
-      // Make request to file upload endpoint
-      apiResponse = await fetch(`${baseUrl}/nistai`, {
+      // Create new FormData and append file with correct format
+      const apiFormData = new FormData();
+      const fileBlob = new Blob([await pdfFile.arrayBuffer()], { type: 'application/pdf' });
+      apiFormData.append('file', fileBlob, pdfFile.name);
+
+      // Make request matching exact curl format
+      apiResponse = await fetch(apiUrl, {
         method: 'POST',
-        body: apiFormData,
         headers: {
-          'Accept': 'application/json'
-        }
+          'accept': 'application/json'
+        },
+        body: apiFormData
       });
+
+      console.log('Request sent to:', apiUrl);
     } else {
       // Handle URL-based request
       const body = await request.json();

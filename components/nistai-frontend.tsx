@@ -78,9 +78,6 @@ export function NistaiFrontend() {
 
       fetch('/api/process', {
         method: 'POST',
-        headers: {
-          'Accept': 'application/json'
-        },
         body: formData,
       })
         .then(response => {
