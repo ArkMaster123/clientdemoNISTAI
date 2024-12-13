@@ -36,7 +36,7 @@ export function NistaiFrontend() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [analysisStep, setAnalysisStep] = useState(0)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [resultHtml, setResultHtml] = useState<string | null>(null)
+  const [resultData, setResultData] = useState<any>(null)
   const [pdfUrl, setPdfUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -71,10 +71,10 @@ export function NistaiFrontend() {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
           }
-          return response.text()
+          return response.json()
         })
         .then(data => {
-          setResultHtml(data)
+          setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
@@ -503,10 +503,111 @@ export function NistaiFrontend() {
           )}
 
           {/* Results Container */}
-{resultHtml ? (
+{resultData ? (
   <Card className="mb-8">
     <CardContent className="p-6">
-      <AnalysisResults htmlContent={resultHtml} />
+      <div className="space-y-6">
+        {/* Executive Summary */}
+        <Card className="bg-blue-600 text-white">
+          <CardContent className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Security Analysis Report</h1>
+            <p className="text-lg opacity-90">{resultData.executive_summary}</p>
+          </CardContent>
+        </Card>
+
+        {/* Security Risks */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-red-600">
+              <AlertTriangle className="mr-2" /> Security Risks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {resultData.security_risks.map((risk, index) => (
+                <Card key={index} className="bg-red-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2">{risk.title}</h3>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {risk.details.map((detail, i) => (
+                        <li key={i} className="text-sm">{detail}</li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-sm text-red-600">Impact: {risk.impact}</p>
+                    <p className="text-sm font-medium">Severity: {risk.severity}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* NIST Framework Scores */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-blue-600">
+              <Activity className="mr-2" /> NIST Framework Scores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {Object.entries(resultData.nist_framework_scores).map(([category, data]: [string, any]) => (
+                <Card key={category} className="bg-gray-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2 capitalize">{category}</h3>
+                    <div className="flex space-x-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <div
+                          key={n}
+                          className={`h-2 w-full rounded ${
+                            n <= parseInt(data.score) ? 'bg-blue-600' : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-sm font-medium mb-2">{data.score}/5</div>
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium">Findings:</p>
+                      <ul className="list-disc pl-4">
+                        {data.findings.map((finding, i) => (
+                          <li key={i}>{finding}</li>
+                        ))}
+                      </ul>
+                      <p className="font-medium mt-2">Key Gaps:</p>
+                      <p>{data.key_gaps}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recommendations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-green-600">
+              <ArrowRight className="mr-2" /> Recommendations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {resultData.recommendations.map((rec, index) => (
+                <Card key={index} className="bg-green-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2">{rec.title}</h3>
+                    <div className="space-y-1 text-sm">
+                      <p><span className="font-medium">Priority:</span> {rec.priority}</p>
+                      <p><span className="font-medium">Complexity:</span> {rec.implementation_complexity}</p>
+                      <p><span className="font-medium">Impact:</span> {rec.expected_impact}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </CardContent>
   </Card>
 ) : (
