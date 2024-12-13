@@ -23,20 +23,20 @@ export async function POST(request: NextRequest) {
       throw new Error('API base URL not configured');
     }
     
-    let response;
+    let apiResponse: Response;
 
     if (pdfFile) {
       console.log(`Processing PDF file: ${pdfFile.name}`);
       const formData = new FormData();
       formData.append('pdf_file', pdfFile);
       
-      response = await fetch(`${baseUrl}/nistai`, {
+      apiResponse = await fetch(`${baseUrl}/nistai`, {
         method: 'POST',
         body: formData
       });
     } else {
       console.log(`Processing PDF URL: ${pdfUrl}`);
-      response = await fetch(`${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl as string)}`, {
+      apiResponse = await fetch(`${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl as string)}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json'
@@ -45,15 +45,14 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Backend request completed');
-    });
 
-    if (!response.ok) {
+    if (!response?.ok) {
       const errorText = await response.text();
       console.error(`Backend error: ${errorText}`);
       throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
 
-    const result = await response.text();
+    const result = await apiResponse.text();
     
     // Parse and validate JSON response
     let jsonResponse;
