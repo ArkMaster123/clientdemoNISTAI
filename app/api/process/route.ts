@@ -18,7 +18,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No PDF file or URL provided' }, { status: 400 });
     }
 
-    const baseUrl = 'https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error('API base URL not configured');
+    }
+    
     let response;
 
     if (pdfFile) {
@@ -26,7 +30,7 @@ export async function POST(request: NextRequest) {
       const formData = new FormData();
       formData.append('pdf_file', pdfFile);
       
-      response = await fetch(`${baseUrl}/`, {
+      response = await fetch(`${baseUrl}/nistai`, {
         method: 'POST',
         body: formData
       });
