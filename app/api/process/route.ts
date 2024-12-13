@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
       // Make request to file upload endpoint
       apiResponse = await fetch(`${baseUrl}/nistai`, {
         method: 'POST',
+        body: apiFormData,
         headers: {
-          'Accept': 'application/json',
-        },
-        body: apiFormData
+          'Accept': 'application/json'
+        }
       });
     } else {
       // Handle URL-based request
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ pdf_url: pdfUrl })
       });
