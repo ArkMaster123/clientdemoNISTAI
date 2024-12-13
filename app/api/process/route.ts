@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
 
     console.log('Backend request completed');
 
-    if (!response?.ok) {
-      const errorText = await response.text();
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
       console.error(`Backend error: ${errorText}`);
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      throw new Error(`HTTP error! status: ${apiResponse.status}, message: ${errorText}`);
     }
 
     const result = await apiResponse.text();

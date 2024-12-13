@@ -37,6 +37,7 @@ export function NistaiFrontend() {
   const [analysisStep, setAnalysisStep] = useState(0)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [resultData, setResultData] = useState<any>(null)
+  const [resultHtml, setResultHtml] = useState<string>('')
   const [pdfUrl, setPdfUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -116,10 +117,10 @@ export function NistaiFrontend() {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
           }
-          return response.text()
+          return response.json()
         })
         .then(data => {
-          setResultHtml(data)
+          setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
