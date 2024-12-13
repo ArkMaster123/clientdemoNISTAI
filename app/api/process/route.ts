@@ -61,8 +61,14 @@ export async function POST(request: NextRequest) {
 
       console.log(`Processing PDF URL: ${pdfUrl}`);
       
+      // Log the request details
+      console.log('Base URL:', baseUrl);
+      console.log('PDF URL:', pdfUrl);
+      const apiUrl = `${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl)}`;
+      console.log('Full API URL:', apiUrl);
+
       // Make request to URL endpoint
-      apiResponse = await fetch(`${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl)}`, {
+      apiResponse = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Accept': 'application/json'
