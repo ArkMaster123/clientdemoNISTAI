@@ -45,6 +45,18 @@ export function NistaiFrontend() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds maximum limit of 10MB');
+        return;
+      }
+      
+      // Check file type
+      if (file.type !== 'application/pdf') {
+        alert('Only PDF files are accepted');
+        return;
+      }
+      
       setSelectedFile(file)
       setUploadProgress(0)
       setAnalysisStep(1)
@@ -99,6 +111,18 @@ export function NistaiFrontend() {
     event.preventDefault()
     const file = event.dataTransfer.files?.[0]
     if (file) {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds maximum limit of 10MB');
+        return;
+      }
+      
+      // Check file type
+      if (file.type !== 'application/pdf') {
+        alert('Only PDF files are accepted');
+        return;
+      }
+      
       setSelectedFile(file)
       setUploadProgress(0)
       setAnalysisStep(1)
@@ -468,7 +492,12 @@ export function NistaiFrontend() {
                     <p className="text-lg font-medium mb-2">
                       {selectedFile ? selectedFile.name : "Choose or Drop File"}
                     </p>
-                    <p className="text-sm text-gray-500">PDF up to 10MB</p>
+                    <p className="text-sm text-gray-500">PDF files only, maximum 10MB</p>
+                    {selectedFile && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Selected file size: {(selectedFile.size / (1024 * 1024)).toFixed(2)}MB
+                      </p>
+                    )}
                   </div>
                 </TabsContent>
                 <TabsContent value="url">
