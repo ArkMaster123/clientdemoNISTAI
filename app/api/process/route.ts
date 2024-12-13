@@ -4,73 +4,108 @@ export const runtime = 'edge';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   console.log('Starting PDF processing request');
 
   try {
-    const formData = await request.formData();
-    const pdfFile = formData.get('pdf_file') as File | null;
-    const pdfUrl = formData.get('pdf_url') as string | null;
-
-    if (!pdfFile && !pdfUrl) {
-      console.error('No PDF file or URL provided');
-      return NextResponse.json({ error: 'No PDF file or URL provided' }, { status: 400 });
-    }
-
+    // Check if the API base URL is configured
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!baseUrl) {
       throw new Error('API base URL not configured');
     }
-    
-    let apiResponse: Response;
 
-    if (pdfFile) {
+    // Initialize response variable
+    let apiResponse: Response;
+    const contentType = request.headers.get('content-type') || '';
+
+    // Handle URL-based request vs File upload based on content type
+    if (contentType.includes('multipart/form-data')) {
+      // Handle file upload
+      const formData = await request.formData();
+      const pdfFile = formData.get('file') as File | null;  // Changed from pdf_file to file
+
+      if (!pdfFile) {
+        return NextResponse.json(
+          { error: 'No file provided in request' },
+          { status: 400 }
+        );
+      }
+
       console.log(`Processing PDF file: ${pdfFile.name}`);
-      const formData = new FormData();
-      formData.append('pdf_file', pdfFile);
       
+      // Create new FormData for the API request
+      const apiFormData = new FormData();
+      apiFormData.append('file', pdfFile);
+
+      // Make request to file upload endpoint
       apiResponse = await fetch(`${baseUrl}/nistai`, {
         method: 'POST',
-        body: formData
+        headers: {
+          'Accept': 'application/json',
+        },
+        body: apiFormData
       });
     } else {
+      // Handle URL-based request
+      const pdfUrl = request.nextUrl.searchParams.get('pdf_url');
+      
+      if (!pdfUrl) {
+        return NextResponse.json(
+          { error: 'No PDF URL provided in request' },
+          { status: 400 }
+        );
+      }
+
       console.log(`Processing PDF URL: ${pdfUrl}`);
+      
+      // Make request to URL endpoint
       apiResponse = await fetch(`${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl)}`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
-        body: ''
+        body: '',  // Empty body as required by the API
       });
     }
 
     console.log('Backend request completed');
 
+    // Handle API response
     if (!apiResponse.ok) {
       const errorText = await apiResponse.text();
       console.error(`Backend error: ${errorText}`);
-      throw new Error(`HTTP error! status: ${apiResponse.status}, message: ${errorText}`);
+      return NextResponse.json(
+        { error: `API request failed: ${errorText}` },
+        { status: apiResponse.status }
+      );
     }
 
-    const result = await apiResponse.text();
-    
-    // Parse and validate JSON response
+    // Process successful response
+    const responseText = await apiResponse.text();
     let jsonResponse;
+    
     try {
-      jsonResponse = JSON.parse(result);
+      jsonResponse = JSON.parse(responseText);
+      
+      // Validate response structure
       if (!jsonResponse.response || !jsonResponse.response.executive_summary) {
-        throw new Error('Invalid response format');
+        throw new Error('Invalid response format from API');
       }
     } catch (error) {
-      console.error('Failed to parse response:', result);
-      throw new Error('Invalid JSON response from backend');
+      console.error('Failed to parse API response:', responseText);
+      return NextResponse.json(
+        { error: 'Invalid response format from API' },
+        { status: 500 }
+      );
     }
 
     const processingTime = (Date.now() - startTime) / 1000;
     console.log(`Processing completed in ${processingTime.toFixed(2)}s`);
 
-    // Return the JSON response
+    // Return successful response
     return NextResponse.json(jsonResponse, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
@@ -81,15 +116,14 @@ export async function POST(request: NextRequest) {
     const processingTime = (Date.now() - startTime) / 1000;
     console.error(`Error after ${processingTime.toFixed(2)}s:`, error);
     
-    // Return a more detailed error response
     return NextResponse.json(
-      { 
-        error: 'An error occurred while processing the request',
+      {
+        error: 'Request processing failed',
         details: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
         processingTime: `${processingTime.toFixed(2)}s`
-      }, 
-      { 
+      },
+      {
         status: 500,
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',

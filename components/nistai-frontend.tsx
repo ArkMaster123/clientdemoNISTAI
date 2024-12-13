@@ -62,25 +62,35 @@ export function NistaiFrontend() {
 
       // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_file', file)
+      formData.append('file', file)
 
       fetch('/api/process', {
         method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
         body: formData,
       })
         .then(response => {
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            return response.text().then(text => {
+              throw new Error(`HTTP error! status: ${response.status}, message: ${text}`)
+            })
           }
           return response.json()
         })
         .then(data => {
+          if (!data.response || !data.response.executive_summary) {
+            throw new Error('Invalid response format')
+          }
           setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
           console.error('Error:', error)
-          // Handle error (e.g., show error message to user)
+          setAnalysisStep(0) // Reset analysis step
+          // TODO: Add error notification component here
+          alert(error.message) // Temporary error display
         })
     }
   }
@@ -106,11 +116,13 @@ export function NistaiFrontend() {
 
       // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_file', file)
+      formData.append('file', file)
 
       fetch('/api/process', {
         method: 'POST',
-        headers: {"Accept":"text/html"},
+        headers: {
+          'Accept': 'application/json'
+        },
         body: formData,
       })
         .then(response => {
@@ -159,7 +171,8 @@ export function NistaiFrontend() {
       fetch(`/api/process?${params.toString()}`, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: ''
       })
