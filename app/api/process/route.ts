@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No PDF file or URL provided' }, { status: 400 });
     }
 
-    const apiUrl = 'https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev/process';
+    const apiUrl = 'https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev/';
+
     let body: FormData | URLSearchParams;
 
     if (pdfFile) {
