@@ -36,11 +36,13 @@ export async function POST(request: NextRequest) {
       });
     } else {
       console.log(`Processing PDF URL: ${pdfUrl}`);
-      apiResponse = await fetch(`${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl as string)}`, {
+      apiResponse = await fetch(`${baseUrl}/nistai_url`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json'
-        }
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ pdf_url: pdfUrl })
       });
     }
 
