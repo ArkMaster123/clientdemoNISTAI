@@ -167,14 +167,13 @@ export function NistaiFrontend() {
       }, 500)
 
       // Send fetch request
-      const params = new URLSearchParams({ pdf_url: pdfUrl });
-      fetch(`/api/process?${params.toString()}`, {
+      fetch('/api/process', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: ''
+        body: JSON.stringify({ pdf_url: pdfUrl })
       })
         .then(response => {
           if (!response.ok) {
