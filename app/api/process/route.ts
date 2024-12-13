@@ -49,11 +49,12 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Handle URL-based request
-      const pdfUrl = request.nextUrl.searchParams.get('pdf_url');
+      const body = await request.json();
+      const pdfUrl = body.pdf_url;
       
       if (!pdfUrl) {
         return NextResponse.json(
-          { error: 'No PDF URL provided in request' },
+          { error: 'No PDF URL provided in request body' },
           { status: 400 }
         );
       }
