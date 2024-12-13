@@ -61,19 +61,16 @@ export async function POST(request: NextRequest) {
 
       console.log(`Processing PDF URL: ${pdfUrl}`);
       
-      // Log the request details
-      console.log('Base URL:', baseUrl);
-      console.log('PDF URL:', pdfUrl);
-      const apiUrl = `${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl)}`;
-      console.log('Full API URL:', apiUrl);
-
-      // Remove trailing slash if present from baseUrl
+      // Remove trailing slash if present from baseUrl and form API URL
       const normalizedBaseUrl = baseUrl?.endsWith('/') 
         ? baseUrl.slice(0, -1) 
         : baseUrl;
       
-      // Make request to URL endpoint
       const apiUrl = `${normalizedBaseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl)}`;
+      
+      // Log the request details
+      console.log('Base URL:', normalizedBaseUrl);
+      console.log('PDF URL:', pdfUrl);
       console.log('Full API URL:', apiUrl);
       
       apiResponse = await fetch(apiUrl, {

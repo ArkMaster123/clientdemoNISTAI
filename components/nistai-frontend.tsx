@@ -197,16 +197,20 @@ export function NistaiFrontend() {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ pdf_url: pdfUrl })
+        body: JSON.stringify({ 
+          pdf_url: pdfUrl  // Send raw URL, let API handle encoding
+        })
       })
         .then(response => {
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            return response.text().then(text => {
+              throw new Error(`HTTP error! status: ${response.status}, message: ${text}`)
+            })
           }
-          return response.text()
+          return response.json()
         })
         .then(data => {
-          setResultHtml(data)
+          setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
