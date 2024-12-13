@@ -155,15 +155,13 @@ export function NistaiFrontend() {
       }, 500)
 
       // Send fetch request
-      const formData = new FormData();
-      formData.append('pdf_url', pdfUrl);
-      
       fetch('/api/process', {
         method: 'POST',
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: formData,
+        body: JSON.stringify({ pdf_url: pdfUrl }),
       })
         .then(response => {
           if (!response.ok) {
