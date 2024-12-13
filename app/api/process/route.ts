@@ -19,9 +19,10 @@ export async function POST(request: NextRequest) {
     // Initialize response variable
     let apiResponse: Response;
     const contentType = request.headers.get('content-type') || '';
+    console.log('Content-Type:', contentType); // Debug logging
 
     // Handle URL-based request vs File upload based on content type
-    if (contentType.includes('multipart/form-data')) {
+    if (contentType.startsWith('multipart/form-data')) {
       // Handle file upload
       const formData = await request.formData();
       const pdfFile = formData.get('file') as File | null;
