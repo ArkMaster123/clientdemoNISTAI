@@ -18,27 +18,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No PDF file or URL provided' }, { status: 400 });
     }
 
-    const apiUrl = 'https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev/';
-
-    let body: FormData | URLSearchParams;
+    const baseUrl = 'https://dd962088-bc71-4b84-abd1-8bbe309dfff0-00-ikr23jx9t635.spock.replit.dev';
+    let response;
 
     if (pdfFile) {
       console.log(`Processing PDF file: ${pdfFile.name}`);
-      body = new FormData();
-      body.append('pdf_file', pdfFile);
+      const formData = new FormData();
+      formData.append('pdf_file', pdfFile);
+      
+      response = await fetch(`${baseUrl}/`, {
+        method: 'POST',
+        body: formData
+      });
     } else {
       console.log(`Processing PDF URL: ${pdfUrl}`);
-      body = new URLSearchParams();
-      body.append('pdf_url', pdfUrl as string);
+      response = await fetch(`${baseUrl}/nistai_url?pdf_url=${encodeURIComponent(pdfUrl as string)}`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json'
+        }
+      });
     }
 
-    console.log('Sending request to backend');
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: body,
-      headers: pdfUrl ? { 
-        'Content-Type': 'application/x-www-form-urlencoded',
-      } : {},
+    console.log('Backend request completed');
     });
 
     if (!response.ok) {
