@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         body: apiFormData,
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Access-Control-Allow-Methods': 'POST'
         }
       });
     } else {
@@ -66,7 +67,8 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Methods': 'POST'
         },
         body: JSON.stringify({ pdf_url: pdfUrl })
       });
