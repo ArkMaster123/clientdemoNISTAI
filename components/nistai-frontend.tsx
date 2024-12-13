@@ -36,7 +36,8 @@ export function NistaiFrontend() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [analysisStep, setAnalysisStep] = useState(0)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [resultHtml, setResultHtml] = useState<string | null>(null)
+  const [resultData, setResultData] = useState<any>(null)
+  const [resultHtml, setResultHtml] = useState<string>('')
   const [pdfUrl, setPdfUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -44,6 +45,18 @@ export function NistaiFrontend() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds maximum limit of 10MB');
+        return;
+      }
+      
+      // Check file type
+      if (file.type !== 'application/pdf') {
+        alert('Only PDF files are accepted');
+        return;
+      }
+      
       setSelectedFile(file)
       setUploadProgress(0)
       setAnalysisStep(1)
@@ -61,7 +74,7 @@ export function NistaiFrontend() {
 
       // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_file', file)
+      formData.append('file', file)
 
       fetch('/api/process', {
         method: 'POST',
@@ -69,17 +82,24 @@ export function NistaiFrontend() {
       })
         .then(response => {
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            return response.text().then(text => {
+              throw new Error(`HTTP error! status: ${response.status}, message: ${text}`)
+            })
           }
-          return response.text()
+          return response.json()
         })
         .then(data => {
-          setResultHtml(data)
+          if (!data.response || !data.response.executive_summary) {
+            throw new Error('Invalid response format')
+          }
+          setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
           console.error('Error:', error)
-          // Handle error (e.g., show error message to user)
+          setAnalysisStep(0) // Reset analysis step
+          // TODO: Add error notification component here
+          alert(error.message) // Temporary error display
         })
     }
   }
@@ -88,6 +108,18 @@ export function NistaiFrontend() {
     event.preventDefault()
     const file = event.dataTransfer.files?.[0]
     if (file) {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds maximum limit of 10MB');
+        return;
+      }
+      
+      // Check file type
+      if (file.type !== 'application/pdf') {
+        alert('Only PDF files are accepted');
+        return;
+      }
+      
       setSelectedFile(file)
       setUploadProgress(0)
       setAnalysisStep(1)
@@ -105,21 +137,23 @@ export function NistaiFrontend() {
 
       // Send fetch request
       const formData = new FormData()
-      formData.append('pdf_file', file)
+      formData.append('file', file)
 
       fetch('/api/process', {
         method: 'POST',
-        headers: {"Accept":"text/html"},
+        headers: {
+          'Accept': 'application/json'
+        },
         body: formData,
       })
         .then(response => {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
           }
-          return response.text()
+          return response.json()
         })
         .then(data => {
-          setResultHtml(data)
+          setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
@@ -154,22 +188,26 @@ export function NistaiFrontend() {
       }, 500)
 
       // Send fetch request
-      const formData = new FormData()
-      formData.append('pdf_url', pdfUrl)
-
       fetch('/api/process', {
         method: 'POST',
-        headers: {"Accept":"text/html"},
-        body: formData,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          pdf_url: pdfUrl  // Send raw URL, let API handle encoding
+        })
       })
         .then(response => {
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
+            return response.text().then(text => {
+              throw new Error(`HTTP error! status: ${response.status}, message: ${text}`)
+            })
           }
-          return response.text()
+          return response.json()
         })
         .then(data => {
-          setResultHtml(data)
+          setResultData(data.response)
           setAnalysisStep(4) // Analysis complete
         })
         .catch(error => {
@@ -455,7 +493,12 @@ export function NistaiFrontend() {
                     <p className="text-lg font-medium mb-2">
                       {selectedFile ? selectedFile.name : "Choose or Drop File"}
                     </p>
-                    <p className="text-sm text-gray-500">PDF up to 10MB</p>
+                    <p className="text-sm text-gray-500">PDF files only, maximum 10MB</p>
+                    {selectedFile && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Selected file size: {(selectedFile.size / (1024 * 1024)).toFixed(2)}MB
+                      </p>
+                    )}
                   </div>
                 </TabsContent>
                 <TabsContent value="url">
@@ -503,10 +546,111 @@ export function NistaiFrontend() {
           )}
 
           {/* Results Container */}
-{resultHtml ? (
+{resultData ? (
   <Card className="mb-8">
     <CardContent className="p-6">
-      <AnalysisResults htmlContent={resultHtml} />
+      <div className="space-y-6">
+        {/* Executive Summary */}
+        <Card className="bg-blue-600 text-white">
+          <CardContent className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Security Analysis Report</h1>
+            <p className="text-lg opacity-90">{resultData.executive_summary}</p>
+          </CardContent>
+        </Card>
+
+        {/* Security Risks */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-red-600">
+              <AlertTriangle className="mr-2" /> Security Risks
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {resultData.security_risks.map((risk, index) => (
+                <Card key={index} className="bg-red-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2">{risk.title}</h3>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {risk.details.map((detail, i) => (
+                        <li key={i} className="text-sm">{detail}</li>
+                      ))}
+                    </ul>
+                    <p className="mt-2 text-sm text-red-600">Impact: {risk.impact}</p>
+                    <p className="text-sm font-medium">Severity: {risk.severity}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* NIST Framework Scores */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-blue-600">
+              <Activity className="mr-2" /> NIST Framework Scores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {Object.entries(resultData.nist_framework_scores).map(([category, data]: [string, any]) => (
+                <Card key={category} className="bg-gray-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2 capitalize">{category}</h3>
+                    <div className="flex space-x-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <div
+                          key={n}
+                          className={`h-2 w-full rounded ${
+                            n <= parseInt(data.score) ? 'bg-blue-600' : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-sm font-medium mb-2">{data.score}/5</div>
+                    <div className="text-sm text-gray-600">
+                      <p className="font-medium">Findings:</p>
+                      <ul className="list-disc pl-4">
+                        {data.findings.map((finding, i) => (
+                          <li key={i}>{finding}</li>
+                        ))}
+                      </ul>
+                      <p className="font-medium mt-2">Key Gaps:</p>
+                      <p>{data.key_gaps}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recommendations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-green-600">
+              <ArrowRight className="mr-2" /> Recommendations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {resultData.recommendations.map((rec, index) => (
+                <Card key={index} className="bg-green-50">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-2">{rec.title}</h3>
+                    <div className="space-y-1 text-sm">
+                      <p><span className="font-medium">Priority:</span> {rec.priority}</p>
+                      <p><span className="font-medium">Complexity:</span> {rec.implementation_complexity}</p>
+                      <p><span className="font-medium">Impact:</span> {rec.expected_impact}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </CardContent>
   </Card>
 ) : (
